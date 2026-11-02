@@ -1,0 +1,6 @@
+{
+  "_doc": "Ảnh tuỳ chỉnh thay cho icon mặc định. Đường dẫn tương đối thư mục này. Xem docs/ASSETS.md. Để trống = dùng icon Fluent Emoji có sẵn.",
+  "vehicles": {},
+  "icons": {},
+  "facing": {}
+}

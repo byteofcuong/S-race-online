@@ -2,40 +2,54 @@
 export const W = 1080;
 export const H = 1920;
 
-/** Vùng đường đua (an toàn toàn bộ chiều ngang). Phía trên (340–450) dành cho toast. */
-export const TRACK_TOP = 456;
+/** Vùng đường đua (an toàn toàn bộ chiều ngang). Toast nằm ở cột biển bên phải (x 600–1060). */
+export const TRACK_TOP = 344;
 export const TRACK_BOTTOM = 1040;
 
-/** Mốc địa lý → toạ độ màn hình. lon 104.5–109.5, lat 8.8–23.4 */
-export function geo(lon: number, lat: number): { x: number; y: number } {
-  return { x: 262 + (lon - 104.5) * 108, y: 1014 - (lat - 8.8) * 37.2 };
+/**
+ * Bản đồ thật (viewBox 812×873 của @svg-maps/vietnam, đất liền x 0–380, y 0–800).
+ * Scale để đất liền vừa chiều cao vùng đua; đảo ở bên phải.
+ */
+export const MAP_SCALE = (TRACK_BOTTOM - TRACK_TOP) / 805;
+export const MAP_ORIGIN = { x: 236, y: TRACK_TOP - 2 };
+
+export function mapToScreen(x: number, y: number): { x: number; y: number } {
+  return { x: MAP_ORIGIN.x + x * MAP_SCALE, y: MAP_ORIGIN.y + y * MAP_SCALE };
 }
 
-export interface Landmark {
+export interface TrackPoint {
+  /** id tỉnh cũ trong vietnam.json (lấy tâm) */
+  old: string;
+  /** tên mốc hiển thị */
   name: string;
-  lon: number;
-  lat: number;
-  /** nhãn đặt bên trái hay phải đường */
+  dx?: number;
+  dy?: number;
   side: 'left' | 'right';
-  finish?: boolean;
   start?: boolean;
+  finish?: boolean;
 }
 
-/** Đường chữ S đi qua các mốc này (theo thứ tự từ Nam ra Bắc). */
-export const LANDMARKS: Landmark[] = [
-  { name: 'Cà Mau', lon: 105.15, lat: 9.18, side: 'left', start: true },
-  { name: 'Cần Thơ', lon: 105.78, lat: 10.03, side: 'left' },
-  { name: 'TP.HCM', lon: 106.7, lat: 10.78, side: 'left' },
-  { name: 'Phan Thiết', lon: 108.1, lat: 10.93, side: 'right' },
-  { name: 'Nha Trang', lon: 109.19, lat: 12.25, side: 'right' },
-  { name: 'Quy Nhơn', lon: 109.22, lat: 13.78, side: 'right' },
-  { name: 'Quảng Ngãi', lon: 108.8, lat: 15.12, side: 'right' },
-  { name: 'Đà Nẵng', lon: 108.2, lat: 16.05, side: 'right' },
-  { name: 'Huế', lon: 107.58, lat: 16.46, side: 'right' },
-  { name: 'Đồng Hới', lon: 106.6, lat: 17.47, side: 'right' },
-  { name: 'Vinh', lon: 105.68, lat: 18.68, side: 'left' },
-  { name: 'Thanh Hóa', lon: 105.78, lat: 19.8, side: 'left' },
-  { name: 'Hà Nội', lon: 105.85, lat: 21.03, side: 'right' },
-  { name: 'Hà Giang', lon: 104.98, lat: 22.83, side: 'left' },
-  { name: 'Lũng Cú', lon: 105.32, lat: 23.37, side: 'right', finish: true },
+/** Đường đua đi qua các mốc này (toạ độ = tâm tỉnh cũ + offset trong hệ viewBox bản đồ). */
+export const TRACK_POINTS: TrackPoint[] = [
+  { old: 'camau', name: 'Cà Mau', dx: -4, dy: 10, side: 'left', start: true },
+  { old: 'cantho', name: 'Cần Thơ', side: 'left' },
+  { old: 'hcm', name: 'TP.HCM', dx: -4, dy: 4, side: 'left' },
+  { old: 'binhthuan', name: 'Phan Thiết', dx: 14, dy: 10, side: 'right' },
+  { old: 'khanhhoa', name: 'Nha Trang', dx: 12, dy: 6, side: 'right' },
+  { old: 'binhdinh', name: 'Quy Nhơn', dx: 10, side: 'right' },
+  { old: 'quangngai', name: 'Quảng Ngãi', dx: 12, side: 'right' },
+  { old: 'danang', name: 'Đà Nẵng', dx: 4, side: 'right' },
+  { old: 'tthue', name: 'Huế', dx: 8, dy: 6, side: 'right' },
+  { old: 'quangbinh', name: 'Đồng Hới', dx: 16, dy: 4, side: 'right' },
+  { old: 'nghean', name: 'Vinh', dx: 34, dy: 10, side: 'right' },
+  { old: 'thanhhoa', name: 'Thanh Hóa', dx: 20, dy: 6, side: 'right' },
+  { old: 'hanoi', name: 'Hà Nội', dx: 2, side: 'right' },
+  { old: 'tuyenquang', name: 'Tuyên Quang', dx: -2, side: 'left' },
+  { old: 'hagiang', name: 'Lũng Cú', dx: 4, dy: -28, side: 'right', finish: true },
+];
+
+/** Nhãn quần đảo (bắt buộc hiển thị). */
+export const ISLAND_LABELS = [
+  { name: 'QĐ. Hoàng Sa', x: 574, y: 392 },
+  { name: 'QĐ. Trường Sa', x: 640, y: 735 },
 ];

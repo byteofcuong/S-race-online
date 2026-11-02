@@ -1,13 +1,14 @@
 {
   "_note": "34 tỉnh/thành sau sáp nhập 1/7/2025. aliases: tên cũ, cách gõ phổ biến. plates: đầu số biển xe (chỉ khớp khi bình luận là đúng con số đó). lat: vĩ độ gần đúng để đặt mốc trên bản đồ.",
+  "_vehicles": "vehicle = tên icon trong packages/overlay/src/assets/icons (Fluent Emoji) hoặc ảnh PNG khai báo trong public/assets/manifest.json. Từng tỉnh có thể ghi đè bằng trường vehicle.",
   "regions": {
-    "mien-nui-bac": "Miền núi phía Bắc",
-    "dong-bang-bac-bo": "Đồng bằng Bắc Bộ",
-    "bac-trung-bo": "Bắc Trung Bộ",
-    "nam-trung-bo": "Nam Trung Bộ",
-    "tay-nguyen": "Tây Nguyên",
-    "dong-nam-bo": "Đông Nam Bộ",
-    "tay-nam-bo": "Tây Nam Bộ"
+    "mien-nui-bac": { "name": "Miền núi phía Bắc", "vehicle": "sport-utility-vehicle", "vehicleLabel": "xe địa hình", "color": "#9bd47a" },
+    "dong-bang-bac-bo": { "name": "Đồng bằng Bắc Bộ", "vehicle": "bicycle", "vehicleLabel": "xe đạp phố cổ", "color": "#f7d26b" },
+    "bac-trung-bo": { "name": "Bắc Trung Bộ", "vehicle": "automobile", "vehicleLabel": "ô tô", "color": "#f4a15d" },
+    "nam-trung-bo": { "name": "Nam Trung Bộ", "vehicle": "bus", "vehicleLabel": "xe khách giường nằm", "color": "#7fd0e8" },
+    "tay-nguyen": { "name": "Tây Nguyên", "vehicle": "elephant", "vehicleLabel": "voi Buôn Đôn", "color": "#d9a06b" },
+    "dong-nam-bo": { "name": "Đông Nam Bộ", "vehicle": "motor-scooter", "vehicleLabel": "xe máy", "color": "#ff9f6e" },
+    "tay-nam-bo": { "name": "Tây Nam Bộ", "vehicle": "canoe", "vehicleLabel": "ghe", "color": "#8be0b0" }
   },
   "provinces": [
     { "id": "ha-noi", "name": "Hà Nội", "short": "Hà Nội", "code": "HN", "region": "dong-bang-bac-bo", "color": "#E63946", "lat": 21.03,

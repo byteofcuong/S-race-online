@@ -3,6 +3,7 @@
 Game tương tác cho **TikTok LIVE**: 34 tỉnh thành đua xe dọc bản đồ hình chữ S từ Cà Mau ra Lũng Cú. Người xem chơi cho tỉnh của mình bằng bình luận, thả tim, quà, follow và share. Ván 4 phút, tự nối ván, có giờ vàng, phá đội dẫn đầu, khiên, combo, bám đuổi.
 
 - Overlay 1080×1920 cho TikTok LIVE Studio / OBS, bố cục tránh khung bình luận TikTok
+- Bản đồ Việt Nam thật (34 tỉnh, Hoàng Sa, Trường Sa) sáng màu theo đội; 7 phương tiện theo vùng; icon Fluent Emoji; thay được bằng ảnh riêng qua manifest
 - Kết nối TikTok qua `tiktok-live-connector`; có simulator để test không cần lên live
 - Luật chơi tách riêng, có test; mọi số cân bằng ở `config/balance.json` (nạp lại nóng)
 
@@ -12,7 +13,7 @@ npm run build && npm start      # http://localhost:8787  |  control: /control/
 npm test
 ```
 
-Tài liệu: [docs/SETUP.md](docs/SETUP.md) (cài đặt, LIVE Studio, checklist) · [docs/DESIGN.md](docs/DESIGN.md) (luật chơi, bố cục, cân bằng).
+Tài liệu: [docs/SETUP.md](docs/SETUP.md) (cài đặt, LIVE Studio, checklist) · [docs/DESIGN.md](docs/DESIGN.md) (luật chơi, bố cục, cân bằng) · [docs/ASSETS.md](docs/ASSETS.md) (hình ảnh, thay bằng ảnh của bạn, prompt tạo ảnh).
 
 ## Cấu trúc
 
@@ -23,6 +24,7 @@ packages/
   server/      Node: TikTok/simulator → engine → WebSocket, HTTP API, log JSONL
   overlay/     Vite + PixiJS: bản đồ, xe, hiệu ứng, HUD, âm thanh
   control/     trang điều khiển cho streamer
+scripts/       extract-map, extract-icons, fetch-fonts (tạo lại asset từ nguồn)
 docs/
 ```
 

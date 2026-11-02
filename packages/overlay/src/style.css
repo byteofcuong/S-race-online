@@ -10,6 +10,38 @@
   box-sizing: border-box;
 }
 
+/* icon ảnh (Fluent Emoji / ảnh người dùng) thay cho emoji hệ thống */
+.ico {
+  height: 1.15em;
+  width: auto;
+  vertical-align: -0.2em;
+  margin-right: 0.3em;
+  display: inline-block;
+}
+.ico.big {
+  height: 1.3em;
+}
+.ico.sm {
+  height: 22px;
+  margin-right: 2px;
+  vertical-align: middle;
+}
+.ico.xs {
+  height: 15px;
+  margin-right: 2px;
+  vertical-align: -2px;
+}
+.ico.medal {
+  height: 44px;
+  margin-right: 6px;
+}
+.veh {
+  height: 34px;
+  width: auto;
+  flex: none;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.4));
+}
+
 html,
 body {
   margin: 0;
@@ -33,8 +65,8 @@ body {
   transform-origin: 0 0;
   overflow: hidden;
   background:
-    radial-gradient(1200px 700px at 50% 20%, #1c2b6b 0%, rgba(28, 43, 107, 0) 70%),
-    linear-gradient(180deg, #0f1a4a 0%, #0b1340 45%, #070b26 72%, #04061a 100%);
+    radial-gradient(900px 500px at 50% 12%, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 70%),
+    linear-gradient(180deg, #9fdcff 0%, #74c4ff 14%, #4aa9f0 30%, #2f8fe0 46%, #2576c4 54%, #163a73 60%, #0d1a3f 68%, #080d26 80%, #05081a 100%);
 }
 
 #canvas-host,
@@ -117,10 +149,19 @@ body {
   background: var(--panel);
   border: 2px solid var(--panel-border);
   border-radius: 20px;
-  padding: 12px 22px;
+  padding: 10px 20px;
   font-weight: 700;
   font-size: 26px;
   letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+}
+.phase-chip .ico {
+  height: 32px;
+}
+.timer .ico.big {
+  height: 0.9em;
+  vertical-align: -0.1em;
 }
 .phase-chip.racing {
   background: rgba(6, 214, 160, 0.22);
@@ -135,27 +176,28 @@ body {
 /* ───────── toast (vùng an toàn trên bản đồ) ───────── */
 .toasts {
   position: absolute;
-  left: 40px;
-  right: 40px;
-  top: 340px;
-  height: 112px;
+  left: 610px;
+  width: 450px;
+  top: 352px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  align-items: center;
+  align-items: flex-end;
   justify-content: flex-start;
 }
 .toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   background: var(--panel);
   border: 2px solid var(--panel-border);
-  border-radius: 999px;
-  padding: 8px 24px;
-  font-size: 28px;
+  border-radius: 22px;
+  padding: 8px 18px;
+  font-size: 25px;
+  line-height: 1.2;
   font-weight: 700;
-  white-space: nowrap;
-  max-width: 1000px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 450px;
+  text-align: left;
   animation: toast-in 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
 }
@@ -168,22 +210,26 @@ body {
 }
 .toast.sabotage {
   border-color: #ff4d6d;
-  background: rgba(255, 50, 90, 0.4);
-  font-size: 30px;
+  background: rgba(255, 50, 90, 0.45);
+  font-size: 26px;
 }
 .toast.storm {
   border-color: #b5179e;
-  background: rgba(150, 20, 180, 0.55);
-  font-size: 30px;
+  background: rgba(150, 20, 180, 0.6);
+  font-size: 26px;
 }
 .toast.shield {
   border-color: #4cc9f0;
   background: rgba(60, 170, 240, 0.35);
 }
 .toast.join {
-  font-size: 24px;
-  padding: 6px 20px;
+  font-size: 22px;
+  padding: 6px 16px;
   opacity: 0.95;
+}
+.toast .ico {
+  height: 38px;
+  flex: none;
 }
 .toast.overtake {
   border-color: #06d6a0;
@@ -234,9 +280,8 @@ body {
   border-radius: 16px;
   padding: 10px 20px;
 }
-.center-list .row .medal {
-  font-size: 40px;
-  width: 54px;
+.center-list .row .veh {
+  height: 44px;
 }
 .center-list .row .chip {
   width: 22px;
@@ -265,6 +310,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 12px;
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.1));
   border: 2px solid var(--panel-border);
   border-radius: 999px;
@@ -277,6 +323,10 @@ body {
   background: linear-gradient(90deg, rgba(255, 180, 0, 0.3), rgba(255, 220, 80, 0.5), rgba(255, 180, 0, 0.3));
   border-color: var(--gold);
   color: #fff3c4;
+}
+.cta .ico {
+  height: 46px;
+  margin: 0;
 }
 .cta.revenge {
   background: linear-gradient(90deg, rgba(255, 40, 80, 0.3), rgba(255, 80, 120, 0.5), rgba(255, 40, 80, 0.3));
@@ -334,16 +384,21 @@ body {
 }
 .brow .rank {
   font-weight: 900;
-  font-size: 26px;
-  width: 30px;
+  font-size: 24px;
+  width: 24px;
   text-align: center;
   opacity: 0.9;
+  position: relative;
+}
+.brow .veh {
+  position: relative;
+  height: 36px;
 }
 .brow .code {
   font-weight: 900;
-  font-size: 19px;
-  min-width: 52px;
-  padding: 4px 6px;
+  font-size: 17px;
+  min-width: 46px;
+  padding: 3px 5px;
   border-radius: 8px;
   text-align: center;
   color: #fff;
@@ -352,7 +407,7 @@ body {
 }
 .brow .name {
   font-weight: 700;
-  font-size: 20px;
+  font-size: 19px;
   flex: 1;
   min-width: 0;
   white-space: nowrap;
@@ -361,7 +416,7 @@ body {
   position: relative;
 }
 .brow .meta {
-  font-size: 15px;
+  font-size: 14px;
   opacity: 0.85;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
@@ -370,9 +425,15 @@ body {
   line-height: 1.15;
 }
 .brow .icons {
-  font-size: 18px;
+  font-size: 16px;
   position: relative;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+.brow .icons b {
+  color: var(--gold);
+  margin-right: 4px;
 }
 .brow.leader {
   background: rgba(255, 209, 102, 0.14);
@@ -392,13 +453,21 @@ body {
 .corner {
   position: absolute;
   left: 40px;
+  right: 40px;
   top: 1762px;
   display: flex;
+  align-items: center;
   gap: 24px;
   font-size: 24px;
   font-weight: 700;
   opacity: 0.55;
   font-variant-numeric: tabular-nums;
+}
+.corner .credit {
+  margin-left: auto;
+  font-size: 16px;
+  font-weight: 500;
+  opacity: 0.8;
 }
 
 /* ───────── debug: khung UI TikTok che ───────── */

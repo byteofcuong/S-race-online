@@ -1,23 +1,31 @@
-import { Container, Graphics, Text } from 'pixi.js';
-import { LANDMARKS, geo } from '../layout.ts';
+import { Container, Graphics, Sprite, Text } from 'pixi.js';
+import vn from '../assets/vietnam.json';
+import { TRACK_POINTS, mapToScreen } from '../layout.ts';
+import { assets } from '../assets.ts';
 
-export interface TrackPoint {
+const FONT = 'Be Vietnam Pro, sans-serif';
+
+export interface TrackPos {
   x: number;
   y: number;
   /** góc tiếp tuyến (rad), 0 = hướng +x */
   angle: number;
 }
 
-/** Đường chữ S: spline Catmull-Rom qua các mốc, tham số hoá theo độ dài. */
+/** Đường đua chạy dọc bản đồ thật: spline Catmull-Rom qua tâm các tỉnh, tham số hoá theo độ dài. */
 export class Track {
   readonly view = new Container();
+  readonly signs = new Container();
   private samples: { x: number; y: number; len: number }[] = [];
   private total = 0;
+  readonly points: { x: number; y: number }[];
 
   constructor() {
-    const pts = LANDMARKS.map((l) => geo(l.lon, l.lat));
-    this.sample(pts, 40);
-    this.draw(pts);
+    const old = vn.old as Record<string, { cx: number; cy: number }>;
+    this.points = TRACK_POINTS.map((p) => mapToScreen(old[p.old].cx + (p.dx ?? 0), old[p.old].cy + (p.dy ?? 0)));
+    this.sample(this.points, 40);
+    this.draw();
+    this.view.addChild(this.signs);
   }
 
   private sample(pts: { x: number; y: number }[], perSeg: number) {
@@ -42,7 +50,7 @@ export class Track {
   }
 
   /** Vị trí trên đường theo progress 0..1 */
-  at(progress: number): TrackPoint {
+  at(progress: number): TrackPos {
     const p = Math.max(0, Math.min(1, progress));
     const target = p * this.total;
     let lo = 0, hi = this.samples.length - 1;
@@ -58,19 +66,15 @@ export class Track {
     return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, angle: Math.atan2(b.y - a.y, b.x - a.x) };
   }
 
-  private draw(pts: { x: number; y: number }[]) {
+  private draw() {
     const path = (g: Graphics) => {
       g.moveTo(this.samples[0].x, this.samples[0].y);
       for (const s of this.samples) g.lineTo(s.x, s.y);
       return g;
     };
-    // đất liền mềm quanh đường
-    const land2 = path(new Graphics()).stroke({ width: 230, color: 0x1f7a5a, alpha: 0.16, cap: 'round', join: 'round' });
-    const land = path(new Graphics()).stroke({ width: 150, color: 0x2fae7a, alpha: 0.2, cap: 'round', join: 'round' });
-    // viền đường sáng
-    const edge = path(new Graphics()).stroke({ width: 58, color: 0xdfe6ff, alpha: 0.35, cap: 'round', join: 'round' });
-    const road = path(new Graphics()).stroke({ width: 46, color: 0x262a45, alpha: 1, cap: 'round', join: 'round' });
-    // vạch giữa đứt đoạn
+    const outline = path(new Graphics()).stroke({ width: 32, color: 0x2a2233, alpha: 0.95, cap: 'round', join: 'round' });
+    const road = path(new Graphics()).stroke({ width: 24, color: 0x4f5566, alpha: 1, cap: 'round', join: 'round' });
+    const sheen = path(new Graphics()).stroke({ width: 8, color: 0xffffff, alpha: 0.1, cap: 'round', join: 'round' });
     const dash = new Graphics();
     let on = true;
     for (let i = 1; i < this.samples.length; i++) {
@@ -78,35 +82,42 @@ export class Track {
       if (on) dash.moveTo(a.x, a.y).lineTo(b.x, b.y);
       if (i % 3 === 0) on = !on;
     }
-    dash.stroke({ width: 4, color: 0xffe066, alpha: 0.75, cap: 'round' });
-    this.view.addChild(land2, land, edge, road, dash);
+    dash.stroke({ width: 3, color: 0xffe066, alpha: 0.9, cap: 'round' });
+    this.view.addChild(outline, road, sheen, dash);
 
-    // mốc + nhãn
-    LANDMARKS.forEach((l, i) => {
-      const p = pts[i];
-      const dot = new Graphics().circle(p.x, p.y, l.finish || l.start ? 11 : 7).fill({ color: 0xffffff, alpha: 0.95 });
-      dot.circle(p.x, p.y, l.finish || l.start ? 16 : 11).stroke({ width: 3, color: l.finish ? 0xffd166 : 0xffffff, alpha: 0.5 });
+    // mốc + nhãn kiểu biển báo
+    TRACK_POINTS.forEach((lm, i) => {
+      const p = this.points[i];
+      const big = lm.finish || lm.start;
+      const dot = new Graphics();
+      dot.circle(p.x, p.y, big ? 10 : 7).fill(0xffffff);
+      dot.circle(p.x, p.y, big ? 10 : 7).stroke({ width: 3, color: lm.finish ? 0xffd166 : lm.start ? 0x06d6a0 : 0x3a2e2a, alpha: 0.9 });
       this.view.addChild(dot);
       const label = new Text({
-        text: l.finish ? `🏁 ${l.name}` : l.start ? `🚦 ${l.name}` : l.name,
-        style: { fontFamily: 'Be Vietnam Pro, sans-serif', fontSize: l.finish || l.start ? 26 : 21, fontWeight: l.finish || l.start ? '900' : '700', fill: 0xffffff, dropShadow: { alpha: 0.6, blur: 4, distance: 2 } },
+        text: lm.name,
+        style: {
+          fontFamily: FONT,
+          fontSize: big ? 24 : 19,
+          fontWeight: big ? '900' : '700',
+          fill: 0xffffff,
+          stroke: { color: 0x1b2a4a, width: 4 },
+          dropShadow: { alpha: 0.5, blur: 3, distance: 2 },
+        },
       });
-      label.alpha = l.finish || l.start ? 1 : 0.85;
-      label.anchor.set(l.side === 'left' ? 1 : 0, 0.5);
-      label.position.set(p.x + (l.side === 'left' ? -36 : 36), p.y);
+      label.anchor.set(lm.side === 'left' ? 1 : 0, 0.5);
+      label.position.set(p.x + (lm.side === 'left' ? -22 : 22), p.y);
       this.view.addChild(label);
+      if (lm.start || lm.finish) {
+        void assets.icon(lm.finish ? 'chequered-flag' : 'vertical-traffic-light').then((tex) => {
+          if (!tex) return;
+          const s = new Sprite(tex);
+          s.anchor.set(0.5, 1);
+          s.height = lm.finish ? 54 : 46;
+          s.scale.x = s.scale.y;
+          s.position.set(p.x + (lm.finish ? -26 : 26), p.y - 6);
+          this.signs.addChild(s);
+        });
+      }
     });
-
-    // vạch đích
-    const fin = pts[pts.length - 1];
-    const ang = this.at(1).angle + Math.PI / 2;
-    const flag = new Graphics();
-    for (let k = -3; k < 3; k++) {
-      const c = k % 2 === 0 ? 0xffffff : 0x111111;
-      flag.rect(k * 9, -6, 9, 12).fill({ color: c, alpha: 0.9 });
-    }
-    flag.position.set(fin.x, fin.y);
-    flag.rotation = ang;
-    this.view.addChild(flag);
   }
 }

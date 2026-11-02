@@ -78,11 +78,15 @@ Server tự kết nối lại khi rớt mạng (10s) hoặc khi kênh chưa live
 - [ ] Tắt chế độ đám đông giả lập (nếu đã bật để test)
 - [ ] Âm lượng overlay hợp lý so với giọng nói
 
-## 6. Chỉnh cân bằng
+## 6. Thay hình ảnh
+
+Xem [ASSETS.md](ASSETS.md): đặt PNG vào `packages/overlay/public/assets/`, khai báo trong `manifest.json`, bấm **Nạp lại ảnh** trong control.
+
+## 7. Chỉnh cân bằng
 
 Mọi con số ở `config/balance.json`; server tự nạp lại khi lưu file, không cần restart. Log sự kiện ở `logs/YYYY-MM-DD.jsonl` để xem lại sau buổi live (xem docs/DESIGN.md).
 
-## 7. Lỗi thường gặp
+## 8. Lỗi thường gặp
 
 | Hiện tượng | Nguyên nhân / cách xử lý |
 |---|---|

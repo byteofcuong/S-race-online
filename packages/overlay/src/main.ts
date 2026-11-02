@@ -37,8 +37,8 @@ async function boot() {
 
   const net = new Net({
     onHello(p: ProvincesFile, b: Balance, s: OverlaySettings) {
-      scene.setProvinces(p, b.display.maxCars);
-      hud.setConfig(p, b);
+      // nạp manifest + sprite trước để HUD lấy đúng icon (ảnh người dùng ghi đè)
+      void scene.setProvinces(p, b.display.maxCars).then(() => hud.setConfig(p, b));
       applySettings(s);
     },
     onSnapshot(s) {
@@ -60,7 +60,16 @@ async function boot() {
     },
   });
 
+  let lastReload = 0;
   function applySettings(s: OverlaySettings) {
+    if (s.reloadAssets && s.reloadAssets !== lastReload) {
+      lastReload = s.reloadAssets;
+      void scene.reloadAssets().then(() => {
+        const row = document.getElementById('board-rows');
+        if (row) row.innerHTML = '';
+        location.reload();
+      });
+    }
     if (params.get('mute') !== '1') sfx.muted = s.muted;
     sfx.volume = s.volume ?? 0.8;
     if (params.get('safezone') !== '1') {

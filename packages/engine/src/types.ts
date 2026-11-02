@@ -15,10 +15,21 @@ export interface Province {
   aliases: string[];
   plates: string[];
   merged: string[];
+  /** ghi đè phương tiện của vùng (tên icon hoặc khoá trong manifest) */
+  vehicle?: string;
+}
+
+export interface Region {
+  name: string;
+  /** tên icon phương tiện mặc định cho vùng */
+  vehicle: string;
+  vehicleLabel?: string;
+  /** màu đất liền trên bản đồ */
+  color?: string;
 }
 
 export interface ProvincesFile {
-  regions: Record<string, string>;
+  regions: Record<string, Region>;
   provinces: Province[];
 }
 

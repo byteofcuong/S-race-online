@@ -42,15 +42,17 @@ Quà streak (hoa hồng…) được tính **phần chênh** `repeatCount` mỗi
 ## Bố cục 1080×1920 (tránh UI TikTok trên điện thoại)
 
 ```
-y    0– 240  header TikTok              → trống
+y    0– 240  header TikTok              → trống (trời)
 y  244– 328  thanh trạng thái (ván, đồng hồ / đồng hồ vàng, pha)
-y  340– 450  toast (tối đa 2)
-y  456–1040  bản đồ chữ S + xe + hiệu ứng   ← vùng an toàn toàn chiều ngang
+y  344–1040  bản đồ Việt Nam thật + đường đua + xe   ← vùng an toàn toàn chiều ngang
+             x 610–1060, y 352–700: cột toast (trên biển, tối đa 3)
 y 1058–1134  CTA (trên khung bình luận; đôi khi bị banner quà che một phần – chấp nhận)
 y 1160–1750  x 712–1060: bảng đua 8 đội (bên phải, bình luận không che)
              x    0– 700: trống (khung bình luận TikTok)
-y 1760–1920  thanh nhập + nút quà        → chỉ thống kê mờ
+y 1760–1920  thanh nhập + nút quà        → chỉ thống kê mờ + credit
 ```
+
+Nền: trời/biển sáng ở vùng bản đồ (phong cách hoạt hình tươi sáng), tối dần từ y ≈ 1100 để chữ bình luận TikTok (trắng) đọc được. HUD là thẻ kính tối để tương phản.
 
 Các số che là ước lượng từ nguồn bên thứ ba. Bật phím **D** trong overlay để hiện khung mô phỏng, rồi đối chiếu với ảnh chụp từ điện thoại khi live thử và chỉnh `packages/overlay/src/style.css` nếu lệch.
 
@@ -69,10 +71,10 @@ Tất cả số ở `config/balance.json`, nạp lại nóng.
 
 - `packages/engine` – luật chơi thuần TypeScript, deterministic, có test (`npm test`).
 - `packages/server` – Node: nguồn sự kiện (`sources/tiktok.ts` bọc `tiktok-live-connector`, `sources/simulator.ts`), vòng lặp 30 tick/s, WebSocket snapshot 10Hz + fx tức thời, HTTP API cho control, log JSONL.
-- `packages/overlay` – Vite + PixiJS: chỉ render; nội suy giữa snapshot; HUD bằng DOM; âm thanh tổng hợp WebAudio (không file).
+- `packages/overlay` – Vite + PixiJS: chỉ render; bản đồ thật (`scene/Map.ts`), đường đua theo địa lý (`scene/Track.ts`), phương tiện sprite theo vùng (`scene/Vehicle.ts`), hiệu ứng sprite + hạt (`scene/Effects.ts`); HUD bằng DOM với icon ảnh; âm thanh tổng hợp WebAudio (không file). Ảnh tuỳ chỉnh qua `public/assets/manifest.json` (xem docs/ASSETS.md).
 - `packages/control` – trang điều khiển tĩnh.
 - `config/provinces.json` – 34 tỉnh, mã, alias tỉnh cũ, biển số, màu.
 
 ## Sau MVP (giai đoạn 2)
 
-Mùa giải tuần + bảng 34 tỉnh (SQLite), trưởng đoàn tuần gắn tên trên xe, chung kết Chủ nhật, 6 phương tiện theo vùng, chọn mục tiêu phá bằng bình luận (`phá HN`), tách hiệu ứng ổ gà / tắc đường, lọc tên người dùng nâng cao.
+Mùa giải tuần + bảng 34 tỉnh (SQLite), trưởng đoàn tuần gắn tên trên xe, chung kết Chủ nhật, chọn mục tiêu phá bằng bình luận (`phá HN`), tách hiệu ứng ổ gà / tắc đường, lọc tên người dùng nâng cao, thay icon bằng ảnh vẽ riêng (pipeline đã sẵn, xem docs/ASSETS.md).

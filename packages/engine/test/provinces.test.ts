@@ -28,6 +28,12 @@ describe('dữ liệu tỉnh', () => {
       expect(file.regions[p.region]).toBeTruthy();
     }
   });
+  it('mọi vùng có tên và phương tiện', () => {
+    for (const r of Object.values(file.regions)) {
+      expect(r.name).toBeTruthy();
+      expect(r.vehicle).toMatch(/^[a-z0-9-]+$/);
+    }
+  });
 });
 
 describe('parse tên tỉnh', () => {

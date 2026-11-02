@@ -12,5 +12,9 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     target: 'es2019',
+    // bundle vào thư mục riêng để không lẫn với public/assets (manifest, ảnh người dùng)
+    assetsDir: 'bundle',
+    // giữ SVG icon là file riêng (Pixi nhận diện qua đuôi .svg)
+    assetsInlineLimit: 0,
   },
 });

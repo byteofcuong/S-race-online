@@ -13,6 +13,8 @@ export interface OverlaySettings {
   muted: boolean;
   safeZone: boolean;
   volume: number;
+  /** timestamp: đổi giá trị → overlay nạp lại manifest ảnh */
+  reloadAssets?: number;
 }
 
 export class Hub {
