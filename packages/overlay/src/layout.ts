@@ -25,27 +25,29 @@ export interface TrackPoint {
   dx?: number;
   dy?: number;
   side: 'left' | 'right';
+  /** hiện nhãn (chỉ vài thành phố lớn để bản đồ gọn) */
+  label?: boolean;
   start?: boolean;
   finish?: boolean;
 }
 
 /** Đường đua đi qua các mốc này (toạ độ = tâm tỉnh cũ + offset trong hệ viewBox bản đồ). */
 export const TRACK_POINTS: TrackPoint[] = [
-  { old: 'camau', name: 'Cà Mau', dx: -4, dy: 10, side: 'left', start: true },
+  { old: 'camau', name: 'Cà Mau', dx: -4, dy: 10, side: 'left', label: true, start: true },
   { old: 'cantho', name: 'Cần Thơ', side: 'left' },
-  { old: 'hcm', name: 'TP.HCM', dx: -4, dy: 4, side: 'left' },
+  { old: 'hcm', name: 'TP.HCM', dx: -4, dy: 4, side: 'left', label: true },
   { old: 'binhthuan', name: 'Phan Thiết', dx: 14, dy: 10, side: 'right' },
   { old: 'khanhhoa', name: 'Nha Trang', dx: 12, dy: 6, side: 'right' },
   { old: 'binhdinh', name: 'Quy Nhơn', dx: 10, side: 'right' },
   { old: 'quangngai', name: 'Quảng Ngãi', dx: 12, side: 'right' },
-  { old: 'danang', name: 'Đà Nẵng', dx: 4, side: 'right' },
-  { old: 'tthue', name: 'Huế', dx: 8, dy: 6, side: 'right' },
+  { old: 'danang', name: 'Đà Nẵng', dx: 4, side: 'right', label: true },
+  { old: 'tthue', name: 'Huế', dx: 8, dy: 6, side: 'left', label: true },
   { old: 'quangbinh', name: 'Đồng Hới', dx: 16, dy: 4, side: 'right' },
   { old: 'nghean', name: 'Vinh', dx: 34, dy: 10, side: 'right' },
   { old: 'thanhhoa', name: 'Thanh Hóa', dx: 20, dy: 6, side: 'right' },
-  { old: 'hanoi', name: 'Hà Nội', dx: 2, side: 'right' },
+  { old: 'hanoi', name: 'Hà Nội', dx: 2, side: 'right', label: true },
   { old: 'tuyenquang', name: 'Tuyên Quang', dx: -2, side: 'left' },
-  { old: 'hagiang', name: 'Lũng Cú', dx: 4, dy: -28, side: 'right', finish: true },
+  { old: 'hagiang', name: 'Lũng Cú', dx: 4, dy: -28, side: 'right', label: true, finish: true },
 ];
 
 /** Nhãn quần đảo (bắt buộc hiển thị). */

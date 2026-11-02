@@ -3,7 +3,7 @@
 Game tương tác cho **TikTok LIVE**: 34 tỉnh thành đua xe dọc bản đồ hình chữ S từ Cà Mau ra Lũng Cú. Người xem chơi cho tỉnh của mình bằng bình luận, thả tim, quà, follow và share. Ván 4 phút, tự nối ván, có giờ vàng, phá đội dẫn đầu, khiên, combo, bám đuổi.
 
 - Overlay 1080×1920 cho TikTok LIVE Studio / OBS, bố cục tránh khung bình luận TikTok
-- Bản đồ Việt Nam thật (34 tỉnh, Hoàng Sa, Trường Sa) sáng màu theo đội; 7 phương tiện theo vùng; icon Fluent Emoji; thay được bằng ảnh riêng qua manifest
+- Bản đồ Việt Nam thật một tông (34 tỉnh, Hoàng Sa, Trường Sa), tỉnh của 8 đội dẫn đầu sáng màu đội; xe đua nhìn từ trên nhuộm theo màu đội; dùng được bộ xe Kenney (CC0) hoặc ảnh riêng qua manifest
 - Kết nối TikTok qua `tiktok-live-connector`; có simulator để test không cần lên live
 - Luật chơi tách riêng, có test; mọi số cân bằng ở `config/balance.json` (nạp lại nóng)
 

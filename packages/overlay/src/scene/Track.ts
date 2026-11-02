@@ -25,7 +25,10 @@ export class Track {
     this.points = TRACK_POINTS.map((p) => mapToScreen(old[p.old].cx + (p.dx ?? 0), old[p.old].cy + (p.dy ?? 0)));
     this.sample(this.points, 40);
     this.draw();
-    this.view.addChild(this.signs);
+  }
+
+  get length() {
+    return this.total;
   }
 
   private sample(pts: { x: number; y: number }[], perSeg: number) {
@@ -72,49 +75,46 @@ export class Track {
       for (const s of this.samples) g.lineTo(s.x, s.y);
       return g;
     };
-    const outline = path(new Graphics()).stroke({ width: 32, color: 0x2a2233, alpha: 0.95, cap: 'round', join: 'round' });
-    const road = path(new Graphics()).stroke({ width: 24, color: 0x4f5566, alpha: 1, cap: 'round', join: 'round' });
-    const sheen = path(new Graphics()).stroke({ width: 8, color: 0xffffff, alpha: 0.1, cap: 'round', join: 'round' });
+    // bóng mềm → mép trắng → mặt nhựa
+    const shadow = path(new Graphics()).stroke({ width: 40, color: 0x0b2a4a, alpha: 0.18, cap: 'round', join: 'round' });
+    const edge = path(new Graphics()).stroke({ width: 34, color: 0xffffff, alpha: 0.95, cap: 'round', join: 'round' });
+    const road = path(new Graphics()).stroke({ width: 30, color: 0x2f3440, alpha: 1, cap: 'round', join: 'round' });
     const dash = new Graphics();
     let on = true;
     for (let i = 1; i < this.samples.length; i++) {
       const a = this.samples[i - 1], b = this.samples[i];
       if (on) dash.moveTo(a.x, a.y).lineTo(b.x, b.y);
-      if (i % 3 === 0) on = !on;
+      if (i % 4 === 0) on = !on;
     }
-    dash.stroke({ width: 3, color: 0xffe066, alpha: 0.9, cap: 'round' });
-    this.view.addChild(outline, road, sheen, dash);
+    dash.stroke({ width: 2, color: 0xffffff, alpha: 0.35, cap: 'round' });
+    this.view.addChild(shadow, edge, road, dash);
 
-    // mốc + nhãn kiểu biển báo
+    // chỉ vài thành phố lớn
     TRACK_POINTS.forEach((lm, i) => {
+      if (!lm.label) return;
       const p = this.points[i];
       const big = lm.finish || lm.start;
-      const dot = new Graphics();
-      dot.circle(p.x, p.y, big ? 10 : 7).fill(0xffffff);
-      dot.circle(p.x, p.y, big ? 10 : 7).stroke({ width: 3, color: lm.finish ? 0xffd166 : lm.start ? 0x06d6a0 : 0x3a2e2a, alpha: 0.9 });
-      this.view.addChild(dot);
       const label = new Text({
         text: lm.name,
         style: {
           fontFamily: FONT,
-          fontSize: big ? 24 : 19,
+          fontSize: big ? 22 : 18,
           fontWeight: big ? '900' : '700',
           fill: 0xffffff,
-          stroke: { color: 0x1b2a4a, width: 4 },
-          dropShadow: { alpha: 0.5, blur: 3, distance: 2 },
+          stroke: { color: 0x1d2b45, width: 4 },
         },
       });
       label.anchor.set(lm.side === 'left' ? 1 : 0, 0.5);
-      label.position.set(p.x + (lm.side === 'left' ? -22 : 22), p.y);
-      this.view.addChild(label);
-      if (lm.start || lm.finish) {
+      label.position.set(p.x + (lm.side === 'left' ? -26 : 26), p.y);
+      this.signs.addChild(label);
+      if (big) {
         void assets.icon(lm.finish ? 'chequered-flag' : 'vertical-traffic-light').then((tex) => {
           if (!tex) return;
           const s = new Sprite(tex);
           s.anchor.set(0.5, 1);
-          s.height = lm.finish ? 54 : 46;
-          s.scale.x = s.scale.y;
-          s.position.set(p.x + (lm.finish ? -26 : 26), p.y - 6);
+          s.scale.set(34 / tex.height);
+          const lw = label.width;
+          s.position.set(lm.side === 'left' ? p.x - 30 - lw - 22 : p.x + 30 + lw + 22, p.y + 14);
           this.signs.addChild(s);
         });
       }

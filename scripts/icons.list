@@ -1,19 +1,10 @@
 # Icon Fluent Emoji (MIT) dùng trong overlay. Mỗi dòng một tên icon của @iconify-json/fluent-emoji.
-# phương tiện theo vùng
-canoe
-motor-scooter
-bus
-elephant
-automobile
-bicycle
-sport-utility-vehicle
-racing-car
+
 # hiệu ứng
 fire
 collision
 shield
 tornado
-cloud-with-lightning-and-rain
 sparkles
 party-popper
 red-heart
@@ -36,8 +27,3 @@ vertical-traffic-light
 busts-in-silhouette
 repeat-button
 game-die
-counterclockwise-arrows-button
-link
-plus
-stopwatch
-sunflower

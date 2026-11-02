@@ -1,45 +1,18 @@
+/*
+ * Hệ thống hình ảnh: một kiểu thẻ kính tối cho mọi khối HUD, chữ trắng, một màu nhấn vàng.
+ * Màu tỉnh chỉ xuất hiện ở ô mã tỉnh và vạch tiến độ.
+ */
 :root {
   --font: 'Be Vietnam Pro', 'Segoe UI', Roboto, system-ui, sans-serif;
   --gold: #ffd166;
-  --ink: #0b1026;
-  --panel: rgba(8, 12, 36, 0.72);
-  --panel-border: rgba(255, 255, 255, 0.14);
+  --panel: rgba(12, 18, 38, 0.8);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --radius: 18px;
+  --muted: rgba(255, 255, 255, 0.62);
 }
 
 * {
   box-sizing: border-box;
-}
-
-/* icon ảnh (Fluent Emoji / ảnh người dùng) thay cho emoji hệ thống */
-.ico {
-  height: 1.15em;
-  width: auto;
-  vertical-align: -0.2em;
-  margin-right: 0.3em;
-  display: inline-block;
-}
-.ico.big {
-  height: 1.3em;
-}
-.ico.sm {
-  height: 22px;
-  margin-right: 2px;
-  vertical-align: middle;
-}
-.ico.xs {
-  height: 15px;
-  margin-right: 2px;
-  vertical-align: -2px;
-}
-.ico.medal {
-  height: 44px;
-  margin-right: 6px;
-}
-.veh {
-  height: 34px;
-  width: auto;
-  flex: none;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.4));
 }
 
 html,
@@ -48,7 +21,7 @@ body {
   padding: 0;
   width: 100%;
   height: 100%;
-  background: #0b1026;
+  background: #05081a;
   overflow: hidden;
   font-family: var(--font);
   color: #fff;
@@ -64,9 +37,8 @@ body {
   height: 1920px;
   transform-origin: 0 0;
   overflow: hidden;
-  background:
-    radial-gradient(900px 500px at 50% 12%, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 70%),
-    linear-gradient(180deg, #9fdcff 0%, #74c4ff 14%, #4aa9f0 30%, #2f8fe0 46%, #2576c4 54%, #163a73 60%, #0d1a3f 68%, #080d26 80%, #05081a 100%);
+  /* biển xanh dịu ở vùng bản đồ, tối dần từ CTA trở xuống để bình luận TikTok dễ đọc */
+  background: linear-gradient(180deg, #6cc0f3 0%, #5bb8f0 16%, #3a9fe6 40%, #2f8fdc 52%, #1f5fa8 57%, #102a5a 63%, #080d26 74%, #05081a 100%);
 }
 
 #canvas-host,
@@ -88,7 +60,42 @@ body {
   display: none !important;
 }
 
-/* ───────── thanh trạng thái (y 240–330) ───────── */
+/* icon ảnh (Fluent Emoji / ảnh người dùng) */
+.ico {
+  height: 1.1em;
+  width: auto;
+  vertical-align: -0.18em;
+  margin-right: 0.3em;
+  display: inline-block;
+}
+.ico.big {
+  height: 1.2em;
+}
+.ico.sm {
+  height: 20px;
+  margin: 0 0 0 2px;
+  vertical-align: middle;
+}
+.ico.xs {
+  height: 14px;
+  margin: 0 0 0 3px;
+  vertical-align: -2px;
+}
+.ico.medal {
+  height: 40px;
+  margin: 0;
+}
+
+.chip {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  flex: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85);
+}
+
+/* ───────── thanh trạng thái (y 244–328) ───────── */
 #statusbar {
   position: absolute;
   left: 40px;
@@ -106,201 +113,173 @@ body {
   justify-self: end;
 }
 
+.round-chip,
+.phase-chip {
+  background: var(--panel);
+  border: 1.5px solid var(--panel-border);
+  border-radius: var(--radius);
+  padding: 12px 20px;
+  font-weight: 900;
+  line-height: 1;
+}
 .round-chip {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  background: var(--panel);
-  border: 2px solid var(--panel-border);
-  border-radius: 20px;
-  padding: 10px 22px;
-  font-weight: 900;
-  font-size: 40px;
-  line-height: 1;
+  font-size: 34px;
 }
 .round-chip .label {
-  font-size: 22px;
-  opacity: 0.75;
+  font-size: 18px;
+  color: var(--muted);
   letter-spacing: 2px;
+}
+.phase-chip {
+  font-size: 22px;
+  letter-spacing: 1.5px;
+}
+.phase-chip.golden {
+  color: #1b1d24;
+  background: var(--gold);
+  border-color: var(--gold);
 }
 
 .timer {
   font-weight: 900;
-  font-size: 64px;
+  font-size: 66px;
   line-height: 1;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 3px 14px rgba(8, 30, 70, 0.55);
+}
+.timer.gold {
+  color: var(--gold);
+  font-size: 88px;
+  text-shadow:
+    0 0 26px rgba(255, 180, 0, 0.75),
+    0 4px 18px rgba(0, 0, 0, 0.5);
 }
 .timer.urgent {
   color: #ff6b6b;
   animation: pulse 1s infinite;
 }
-.timer.gold {
-  color: var(--gold);
-  font-size: 92px;
-  text-shadow:
-    0 0 36px rgba(255, 180, 0, 0.95),
-    0 6px 24px rgba(0, 0, 0, 0.7);
-  animation: pulse 0.8s infinite;
-}
-
-.phase-chip {
-  background: var(--panel);
-  border: 2px solid var(--panel-border);
-  border-radius: 20px;
-  padding: 10px 20px;
-  font-weight: 700;
-  font-size: 26px;
-  letter-spacing: 1px;
-  display: flex;
-  align-items: center;
-}
-.phase-chip .ico {
-  height: 32px;
-}
 .timer .ico.big {
-  height: 0.9em;
-  vertical-align: -0.1em;
-}
-.phase-chip.racing {
-  background: rgba(6, 214, 160, 0.22);
-  border-color: rgba(6, 214, 160, 0.6);
-}
-.phase-chip.golden {
-  background: rgba(255, 209, 102, 0.28);
-  border-color: var(--gold);
-  color: var(--gold);
+  height: 0.8em;
+  vertical-align: -0.06em;
 }
 
-/* ───────── toast (vùng an toàn trên bản đồ) ───────── */
+/* ───────── toast: cột biển bên phải, một kiểu duy nhất ───────── */
 .toasts {
   position: absolute;
-  left: 610px;
-  width: 450px;
+  left: 640px;
+  width: 420px;
   top: 352px;
   display: flex;
   flex-direction: column;
   gap: 8px;
   align-items: flex-end;
-  justify-content: flex-start;
 }
 .toast {
   display: flex;
   align-items: center;
   gap: 10px;
   background: var(--panel);
-  border: 2px solid var(--panel-border);
-  border-radius: 22px;
-  padding: 8px 18px;
-  font-size: 25px;
-  line-height: 1.2;
+  border: 1.5px solid var(--panel-border);
+  border-left: 6px solid #7cc4ff;
+  border-radius: 14px;
+  padding: 8px 16px 8px 12px;
+  font-size: 23px;
+  line-height: 1.25;
   font-weight: 700;
-  max-width: 450px;
-  text-align: left;
-  animation: toast-in 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  max-width: 420px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  animation: toast-in 0.3s cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+.toast .ico {
+  height: 32px;
+  margin: 0;
+  flex: none;
+}
+.toast.gift {
+  border-left-color: #ffb703;
+}
+.toast.attack {
+  border-left-color: #ff5d6c;
+}
+.toast.storm {
+  border-left-color: #b06cff;
+}
+.toast.shield {
+  border-left-color: #5fd4ff;
+}
+.toast.gold {
+  border-left-color: var(--gold);
 }
 .toast.out {
   animation: toast-out 0.3s forwards;
 }
-.toast.nitro {
-  border-color: #ff9f1c;
-  background: rgba(255, 110, 20, 0.35);
-}
-.toast.sabotage {
-  border-color: #ff4d6d;
-  background: rgba(255, 50, 90, 0.45);
-  font-size: 26px;
-}
-.toast.storm {
-  border-color: #b5179e;
-  background: rgba(150, 20, 180, 0.6);
-  font-size: 26px;
-}
-.toast.shield {
-  border-color: #4cc9f0;
-  background: rgba(60, 170, 240, 0.35);
-}
-.toast.join {
-  font-size: 22px;
-  padding: 6px 16px;
-  opacity: 0.95;
-}
-.toast .ico {
-  height: 38px;
-  flex: none;
-}
-.toast.overtake {
-  border-color: #06d6a0;
-  background: rgba(6, 214, 160, 0.3);
-}
-.toast.combo {
-  border-color: #ffd166;
-  background: rgba(255, 209, 102, 0.3);
-}
 
-/* ───────── thông báo giữa (lobby/podium) ───────── */
+/* ───────── thẻ giữa (lobby / podium) ───────── */
 .center {
   position: absolute;
-  left: 90px;
-  right: 90px;
-  top: 500px;
-  padding: 36px 40px;
-  background: rgba(6, 9, 30, 0.86);
-  border: 3px solid var(--panel-border);
-  border-radius: 36px;
+  left: 110px;
+  right: 110px;
+  top: 520px;
+  padding: 30px 34px 26px;
+  background: rgba(10, 15, 34, 0.9);
+  border: 1.5px solid var(--panel-border);
+  border-radius: 28px;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-  animation: toast-in 0.4s cubic-bezier(0.2, 1.4, 0.4, 1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  animation: toast-in 0.35s cubic-bezier(0.2, 1.3, 0.4, 1);
 }
 .center-title {
   font-weight: 900;
-  font-size: 58px;
+  font-size: 50px;
   line-height: 1.1;
 }
 .center-sub {
-  margin-top: 10px;
-  font-size: 32px;
-  opacity: 0.9;
+  margin-top: 8px;
+  font-size: 26px;
+  color: var(--muted);
 }
 .center-list {
-  margin-top: 22px;
+  margin-top: 18px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+}
+.center-list:empty {
+  display: none;
 }
 .center-list .row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  font-size: 34px;
+  gap: 14px;
+  font-size: 30px;
   font-weight: 700;
-  background: rgba(255, 255, 255, 0.07);
-  border-radius: 16px;
-  padding: 10px 20px;
-}
-.center-list .row .veh {
-  height: 44px;
-}
-.center-list .row .chip {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 8px 18px;
+  text-align: left;
 }
 .center-list .row .pct {
   margin-left: auto;
-  opacity: 0.8;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+}
+.center-list .row.mvp {
+  font-size: 26px;
 }
 .center-foot {
-  margin-top: 20px;
-  font-size: 30px;
+  margin-top: 16px;
+  font-size: 26px;
   color: var(--gold);
   font-weight: 700;
 }
 
-/* ───────── CTA ngay trên khung bình luận (y 1050–1140) ───────── */
+/* ───────── CTA ngay trên khung bình luận (y 1058–1134) ───────── */
 .cta {
   position: absolute;
   left: 40px;
@@ -311,29 +290,28 @@ body {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.1));
-  border: 2px solid var(--panel-border);
+  background: var(--panel);
+  border: 1.5px solid var(--panel-border);
   border-radius: 999px;
-  font-size: 34px;
+  font-size: 30px;
   font-weight: 700;
-  letter-spacing: 0.5px;
-  transition: background 0.3s, border-color 0.3s;
-}
-.cta.golden {
-  background: linear-gradient(90deg, rgba(255, 180, 0, 0.3), rgba(255, 220, 80, 0.5), rgba(255, 180, 0, 0.3));
-  border-color: var(--gold);
-  color: #fff3c4;
+  transition: background 0.3s, border-color 0.3s, color 0.3s;
 }
 .cta .ico {
-  height: 46px;
+  height: 36px;
   margin: 0;
 }
+.cta.golden {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #1b1d24;
+}
 .cta.revenge {
-  background: linear-gradient(90deg, rgba(255, 40, 80, 0.3), rgba(255, 80, 120, 0.5), rgba(255, 40, 80, 0.3));
-  border-color: #ff4d6d;
+  border-color: #ff5d6c;
+  box-shadow: inset 0 0 0 2px rgba(255, 93, 108, 0.5);
 }
 
-/* ───────── bảng đua: cột phải, khung bình luận không che (x 720–1060, y 1160–1740) ───────── */
+/* ───────── bảng đua: cột phải, bình luận không che (x 712–1060, y 1160–1750) ───────── */
 .board {
   position: absolute;
   left: 712px;
@@ -341,133 +319,125 @@ body {
   top: 1160px;
   height: 590px;
   background: var(--panel);
-  border: 2px solid var(--panel-border);
-  border-radius: 24px;
-  padding: 12px 12px 8px;
+  border: 1.5px solid var(--panel-border);
+  border-radius: 22px;
+  padding: 12px 10px 8px;
   display: flex;
   flex-direction: column;
 }
 .board-head {
   display: flex;
   justify-content: space-between;
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: 2px;
-  opacity: 0.75;
-  padding: 2px 6px 8px;
+  color: var(--muted);
+  padding: 2px 8px 10px;
 }
 #board-rows {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 .brow {
   position: relative;
   height: 62px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
   overflow: hidden;
   display: flex;
   align-items: center;
-  padding: 0 10px;
+  padding: 0 10px 3px;
   gap: 8px;
-  transition: transform 0.4s;
 }
 .brow .bar {
   position: absolute;
   left: 0;
-  top: 0;
   bottom: 0;
+  height: 3px;
   width: 0%;
-  opacity: 0.35;
+  border-radius: 0 3px 3px 0;
   transition: width 0.3s linear;
 }
 .brow .rank {
   font-weight: 900;
-  font-size: 24px;
-  width: 24px;
+  font-size: 22px;
+  width: 22px;
   text-align: center;
-  opacity: 0.9;
-  position: relative;
-}
-.brow .veh {
-  position: relative;
-  height: 36px;
+  color: var(--muted);
 }
 .brow .code {
   font-weight: 900;
-  font-size: 17px;
-  min-width: 46px;
-  padding: 3px 5px;
-  border-radius: 8px;
+  font-size: 15px;
+  min-width: 44px;
+  padding: 4px 6px;
+  border-radius: 7px;
   text-align: center;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-  position: relative;
 }
 .brow .name {
   font-weight: 700;
-  font-size: 19px;
+  font-size: 20px;
   flex: 1;
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  position: relative;
-}
-.brow .meta {
-  font-size: 14px;
-  opacity: 0.85;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  position: relative;
-  text-align: right;
-  line-height: 1.15;
 }
 .brow .icons {
-  font-size: 16px;
-  position: relative;
-  white-space: nowrap;
   display: flex;
   align-items: center;
 }
-.brow .icons b {
-  color: var(--gold);
-  margin-right: 4px;
+.brow .meta {
+  font-size: 15px;
+  color: var(--muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+}
+.brow .meta .dot {
+  margin: 0 4px;
+  opacity: 0.6;
 }
 .brow.leader {
-  background: rgba(255, 209, 102, 0.14);
-  box-shadow: inset 0 0 0 2px rgba(255, 209, 102, 0.5);
+  background: rgba(255, 209, 102, 0.12);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 209, 102, 0.55);
 }
-.brow.slowed {
-  filter: saturate(0.4);
+.brow.leader .rank {
+  color: var(--gold);
+}
+.brow.slowed .name {
+  opacity: 0.55;
 }
 .board-empty {
-  padding: 40px 10px;
+  padding: 60px 14px;
   text-align: center;
-  font-size: 24px;
-  opacity: 0.75;
-  line-height: 1.4;
+  font-size: 22px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.board-empty b {
+  color: #fff;
 }
 
+/* ───────── góc dưới (vùng thanh nhập TikTok – chỉ thông tin phụ) ───────── */
 .corner {
   position: absolute;
   left: 40px;
   right: 40px;
-  top: 1762px;
+  top: 1764px;
   display: flex;
   align-items: center;
-  gap: 24px;
-  font-size: 24px;
+  gap: 22px;
+  font-size: 20px;
   font-weight: 700;
-  opacity: 0.55;
+  opacity: 0.5;
   font-variant-numeric: tabular-nums;
 }
 .corner .credit {
   margin-left: auto;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
-  opacity: 0.8;
 }
 
 /* ───────── debug: khung UI TikTok che ───────── */
@@ -514,10 +484,10 @@ body {
   left: 50%;
   top: 1000px;
   transform: translateX(-50%);
-  background: rgba(255, 60, 60, 0.85);
+  background: rgba(220, 50, 60, 0.9);
   padding: 10px 24px;
   border-radius: 999px;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 700;
 }
 
@@ -527,12 +497,12 @@ body {
     transform: scale(1);
   }
   50% {
-    transform: scale(1.06);
+    transform: scale(1.05);
   }
 }
 @keyframes toast-in {
   from {
-    transform: translateY(-20px) scale(0.9);
+    transform: translateY(-14px);
     opacity: 0;
   }
   to {
@@ -542,7 +512,7 @@ body {
 }
 @keyframes toast-out {
   to {
-    transform: translateY(-10px);
+    transform: translateY(-8px);
     opacity: 0;
   }
 }

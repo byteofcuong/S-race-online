@@ -45,14 +45,14 @@ Quà streak (hoa hồng…) được tính **phần chênh** `repeatCount` mỗi
 y    0– 240  header TikTok              → trống (trời)
 y  244– 328  thanh trạng thái (ván, đồng hồ / đồng hồ vàng, pha)
 y  344–1040  bản đồ Việt Nam thật + đường đua + xe   ← vùng an toàn toàn chiều ngang
-             x 610–1060, y 352–700: cột toast (trên biển, tối đa 3)
+             x 640–1060, y 352–500: cột toast (trên biển, tối đa 2)
 y 1058–1134  CTA (trên khung bình luận; đôi khi bị banner quà che một phần – chấp nhận)
 y 1160–1750  x 712–1060: bảng đua 8 đội (bên phải, bình luận không che)
              x    0– 700: trống (khung bình luận TikTok)
 y 1760–1920  thanh nhập + nút quà        → chỉ thống kê mờ + credit
 ```
 
-Nền: trời/biển sáng ở vùng bản đồ (phong cách hoạt hình tươi sáng), tối dần từ y ≈ 1100 để chữ bình luận TikTok (trắng) đọc được. HUD là thẻ kính tối để tương phản.
+Nền: biển xanh dịu ở vùng bản đồ, tối dần từ y ≈ 1100 để chữ bình luận TikTok (trắng) đọc được. HUD là một kiểu thẻ kính tối, toast một kiểu (thanh màu bên trái theo loại), tối đa 2 toast. Xem nguyên tắc hình ảnh trong docs/ASSETS.md.
 
 Các số che là ước lượng từ nguồn bên thứ ba. Bật phím **D** trong overlay để hiện khung mô phỏng, rồi đối chiếu với ảnh chụp từ điện thoại khi live thử và chỉnh `packages/overlay/src/style.css` nếu lệch.
 
@@ -71,7 +71,7 @@ Tất cả số ở `config/balance.json`, nạp lại nóng.
 
 - `packages/engine` – luật chơi thuần TypeScript, deterministic, có test (`npm test`).
 - `packages/server` – Node: nguồn sự kiện (`sources/tiktok.ts` bọc `tiktok-live-connector`, `sources/simulator.ts`), vòng lặp 30 tick/s, WebSocket snapshot 10Hz + fx tức thời, HTTP API cho control, log JSONL.
-- `packages/overlay` – Vite + PixiJS: chỉ render; bản đồ thật (`scene/Map.ts`), đường đua theo địa lý (`scene/Track.ts`), phương tiện sprite theo vùng (`scene/Vehicle.ts`), hiệu ứng sprite + hạt (`scene/Effects.ts`); HUD bằng DOM với icon ảnh; âm thanh tổng hợp WebAudio (không file). Ảnh tuỳ chỉnh qua `public/assets/manifest.json` (xem docs/ASSETS.md).
+- `packages/overlay` – Vite + PixiJS: chỉ render; bản đồ một tông (`scene/Map.ts`), đường đua theo địa lý (`scene/Track.ts`), xe top-down nhuộm màu đội (`scene/Vehicle.ts`, xe giãn cách tối thiểu và đi làn xen kẽ để không chồng nhau), hiệu ứng tiết chế (`scene/Effects.ts`); HUD bằng DOM; âm thanh tổng hợp WebAudio. Ảnh tuỳ chỉnh và bộ xe Kenney qua `public/assets/manifest.json` (xem docs/ASSETS.md).
 - `packages/control` – trang điều khiển tĩnh.
 - `config/provinces.json` – 34 tỉnh, mã, alias tỉnh cũ, biển số, màu.
 

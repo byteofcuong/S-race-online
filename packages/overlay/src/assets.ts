@@ -1,5 +1,6 @@
 import { Assets, Texture } from 'pixi.js';
 import type { ProvincesFile } from '@srace/engine';
+import carTopdownUrl from './assets/vehicles/car-topdown.svg?url';
 
 /** SVG Fluent Emoji đã trích (scripts/extract-icons.mjs) – Vite cấp URL cho từng file. */
 const ICONS = import.meta.glob('./assets/icons/*.svg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
@@ -8,30 +9,46 @@ export function builtinIconUrl(name: string): string | undefined {
   return ICONS[`./assets/icons/${name}.svg`];
 }
 
-/** public/assets/manifest.json – ảnh do người dùng cung cấp, ghi đè icon mặc định. */
-export interface Manifest {
-  vehicles?: Record<string, string>; // "ha-noi" | "region:tay-nam-bo" → đường dẫn ảnh (tương đối public/assets)
-  icons?: Record<string, string>; // "fire" → đường dẫn ảnh
-  map?: { background?: string };
-  /** icon ảnh người dùng quay mặt bên nào (mặc định trái) */
-  facing?: Record<string, 'left' | 'right'>;
+export type Nose = 'up' | 'down' | 'left' | 'right';
+
+/** Bộ xe top-down (ví dụ Kenney Racing Pack) đã nhập bằng scripts/import-kenney.mjs. */
+export interface VehiclePack {
+  /** thư mục trong public/assets */
+  dir: string;
+  /** mẫu tên file, {n} = số biến thể. Ví dụ "car_yellow_{n}.png" */
+  shape: string;
+  /** mũi xe trong ảnh gốc hướng về đâu (mặc định up) */
+  nose?: Nose;
+  /** biến thể theo tỉnh / "region:<vùng>" / "default": số {n} hoặc tên file .png */
+  variants?: Record<string, number | string>;
 }
 
-/** Hướng mặt của icon Fluent mặc định (để lật đúng chiều chạy). */
-const BUILTIN_FACING: Record<string, 'left' | 'right'> = {
-  canoe: 'left',
-  'motor-scooter': 'left',
-  bus: 'left',
-  elephant: 'left',
-  automobile: 'left',
-  bicycle: 'left',
-  'sport-utility-vehicle': 'left',
-  'racing-car': 'left',
-};
+/** public/assets/manifest.json – ảnh do người dùng cung cấp, ghi đè mặc định. */
+export interface Manifest {
+  vehiclePack?: VehiclePack | null;
+  /** ảnh xe riêng từng tỉnh / "region:<vùng>" (top-down, mũi hướng lên) */
+  vehicles?: Record<string, string>;
+  icons?: Record<string, string>; // "fire" → đường dẫn ảnh
+}
+
+export interface VehicleAsset {
+  url: string;
+  nose: Nose;
+  /** dùng làm khoá cache + để HUD biết có dùng pack ngoài không */
+  source: 'pack' | 'custom' | 'builtin';
+}
+
+export const BUILTIN_VEHICLE: VehicleAsset = { url: carTopdownUrl, nose: 'up', source: 'builtin' };
+
+/** góc cần xoay thêm để mũi xe trong ảnh hướng lên */
+export function noseOffset(n: Nose): number {
+  return n === 'down' ? Math.PI : n === 'left' ? Math.PI / 2 : n === 'right' ? -Math.PI / 2 : 0;
+}
 
 export class AssetStore {
   manifest: Manifest = {};
   private cache = new Map<string, Promise<Texture | undefined>>();
+  private tintCache = new Map<string, Promise<Texture | undefined>>();
   private base = './assets/';
 
   async loadManifest(): Promise<void> {
@@ -42,6 +59,7 @@ export class AssetStore {
       this.manifest = {};
     }
     this.cache.clear();
+    this.tintCache.clear();
   }
 
   private resolve(p: string): string {
@@ -62,6 +80,53 @@ export class AssetStore {
     return p;
   }
 
+  /**
+   * Texture thang xám đã chuẩn hoá độ sáng để `sprite.tint = màu đội` cho ra đúng màu đội.
+   * Ảnh màu bất kỳ (xe đỏ/vàng của Kenney) đều dùng được: phần sáng nhất của thân xe được kéo về ~trắng,
+   * kính và lốp vốn tối nên vẫn tối.
+   */
+  tintable(url: string, targetHeight = 192): Promise<Texture | undefined> {
+    let p = this.tintCache.get(url);
+    if (!p) {
+      p = (async () => {
+        const img = new Image();
+        img.src = url;
+        await img.decode();
+        const nw = img.naturalWidth || 72;
+        const nh = img.naturalHeight || 132;
+        const k = targetHeight / Math.max(nw, nh);
+        const w = Math.max(1, Math.round(nw * k));
+        const h = Math.max(1, Math.round(nh * k));
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+        ctx.drawImage(img, 0, 0, w, h);
+        const data = ctx.getImageData(0, 0, w, h);
+        const px = data.data;
+        // độ sáng các điểm đủ đục → lấy phân vị 90 để chuẩn hoá
+        const lums: number[] = [];
+        for (let i = 0; i < px.length; i += 4) {
+          if (px[i + 3] > 200) lums.push(0.3 * px[i] + 0.59 * px[i + 1] + 0.11 * px[i + 2]);
+        }
+        lums.sort((a, b) => a - b);
+        const p90 = lums.length ? lums[Math.floor(lums.length * 0.9)] : 255;
+        const scale = Math.min(3, Math.max(1, 245 / Math.max(1, p90)));
+        for (let i = 0; i < px.length; i += 4) {
+          const l = Math.min(255, (0.3 * px[i] + 0.59 * px[i + 1] + 0.11 * px[i + 2]) * scale);
+          px[i] = px[i + 1] = px[i + 2] = l;
+        }
+        ctx.putImageData(data, 0, 0);
+        return Texture.from(canvas);
+      })().catch((e) => {
+        console.warn('[assets] không tạo được texture tint', url, e);
+        return undefined;
+      });
+      this.tintCache.set(url, p);
+    }
+    return p;
+  }
+
   iconUrl(name: string): string | undefined {
     const m = this.manifest.icons?.[name];
     return m ? this.resolve(m) : builtinIconUrl(name);
@@ -71,27 +136,39 @@ export class AssetStore {
     return this.texture(this.iconUrl(name));
   }
 
-  /** Tên phương tiện của một tỉnh (ưu tiên ghi đè tỉnh → vùng). */
-  vehicleName(provinces: ProvincesFile, provinceId: string): string {
-    const p = provinces.provinces.find((x) => x.id === provinceId);
-    return p?.vehicle ?? provinces.regions[p?.region ?? '']?.vehicle ?? 'racing-car';
+  get usingPack(): boolean {
+    return !!this.manifest.vehiclePack;
   }
 
-  /** URL + hướng mặt của phương tiện: manifest tỉnh → manifest vùng → icon mặc định. */
-  vehicle(provinces: ProvincesFile, provinceId: string): { url: string | undefined; facing: 'left' | 'right'; name: string } {
+  /** Ảnh xe của một tỉnh: ảnh riêng (manifest.vehicles) → bộ xe (vehiclePack) → xe vẽ sẵn. */
+  vehicle(provinces: ProvincesFile, provinceId: string): VehicleAsset {
     const p = provinces.provinces.find((x) => x.id === provinceId);
-    const name = this.vehicleName(provinces, provinceId);
-    const m = this.manifest.vehicles ?? {};
-    const custom = m[provinceId] ?? m[`region:${p?.region}`] ?? m[name];
-    if (custom) return { url: this.resolve(custom), facing: this.manifest.facing?.[provinceId] ?? this.manifest.facing?.[name] ?? 'left', name };
-    return { url: builtinIconUrl(name), facing: BUILTIN_FACING[name] ?? 'left', name };
+    const region = p?.region ?? '';
+    const custom = this.manifest.vehicles?.[provinceId] ?? this.manifest.vehicles?.[`region:${region}`];
+    if (custom) return { url: this.resolve(custom), nose: 'up', source: 'custom' };
+    const pack = this.manifest.vehiclePack;
+    if (pack?.dir && pack.shape) {
+      const v = pack.variants ?? {};
+      const variant = v[provinceId] ?? v[`region:${region}`] ?? v.default ?? 1;
+      const file = typeof variant === 'string' && /\.(png|webp|svg)$/i.test(variant) ? variant : pack.shape.replace('{n}', String(variant));
+      return { url: this.resolve(`${pack.dir.replace(/\/$/, '')}/${file}`), nose: pack.nose ?? 'up', source: 'pack' };
+    }
+    return BUILTIN_VEHICLE;
+  }
+
+  /** Texture tint được cho xe; ảnh ngoài lỗi → rơi về xe vẽ sẵn. */
+  async vehicleTexture(provinces: ProvincesFile, provinceId: string): Promise<{ tex: Texture; nose: Nose } | undefined> {
+    const a = this.vehicle(provinces, provinceId);
+    const t = await this.tintable(a.url);
+    if (t) return { tex: t, nose: a.nose };
+    const fb = await this.tintable(BUILTIN_VEHICLE.url);
+    return fb ? { tex: fb, nose: 'up' } : undefined;
   }
 
   async preload(provinces: ProvincesFile, icons: string[]): Promise<void> {
     const jobs: Promise<unknown>[] = [];
-    const vehicles = new Set<string>();
-    for (const p of provinces.provinces) vehicles.add(p.id);
-    for (const id of vehicles) jobs.push(this.texture(this.vehicle(provinces, id).url));
+    const urls = new Set(provinces.provinces.map((p) => this.vehicle(provinces, p.id).url));
+    for (const u of urls) jobs.push(this.tintable(u));
     for (const n of icons) jobs.push(this.icon(n));
     await Promise.all(jobs);
   }

@@ -28,11 +28,11 @@ describe('dữ liệu tỉnh', () => {
       expect(file.regions[p.region]).toBeTruthy();
     }
   });
-  it('mọi vùng có tên và phương tiện', () => {
-    for (const r of Object.values(file.regions)) {
-      expect(r.name).toBeTruthy();
-      expect(r.vehicle).toMatch(/^[a-z0-9-]+$/);
-    }
+  it('mọi vùng có tên', () => {
+    for (const r of Object.values(file.regions)) expect(r.name).toBeTruthy();
+  });
+  it('34 màu tỉnh khác nhau', () => {
+    expect(new Set(file.provinces.map((p) => p.color.toLowerCase())).size).toBe(34);
   });
 });
 

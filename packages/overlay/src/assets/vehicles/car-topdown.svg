@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 132" width="72" height="132">
+  <!-- Xe đua nhìn từ trên, mũi hướng lên. Thang xám: phần sáng nhận màu đội khi tint, phần tối (kính, lốp) giữ tối. -->
+  <defs>
+    <linearGradient id="body" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#9a9a9a"/>
+      <stop offset="0.18" stop-color="#e6e6e6"/>
+      <stop offset="0.5" stop-color="#ffffff"/>
+      <stop offset="0.82" stop-color="#e6e6e6"/>
+      <stop offset="1" stop-color="#9a9a9a"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#3a4250"/>
+      <stop offset="1" stop-color="#1c2028"/>
+    </linearGradient>
+    <linearGradient id="roof" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#cfcfcf"/>
+      <stop offset="0.5" stop-color="#f4f4f4"/>
+      <stop offset="1" stop-color="#cfcfcf"/>
+    </linearGradient>
+  </defs>
+  <!-- lốp -->
+  <rect x="3" y="22" width="11" height="22" rx="4" fill="#1b1b1f"/>
+  <rect x="58" y="22" width="11" height="22" rx="4" fill="#1b1b1f"/>
+  <rect x="2" y="86" width="12" height="26" rx="4" fill="#1b1b1f"/>
+  <rect x="58" y="86" width="12" height="26" rx="4" fill="#1b1b1f"/>
+  <!-- thân -->
+  <path d="M36 3 C49 3 57 10 59 22 L61 50 C62 66 63 92 61 112 C60 123 53 128 36 128 C19 128 12 123 11 112 C9 92 10 66 11 50 L13 22 C15 10 23 3 36 3 Z" fill="url(#body)" stroke="#2a2a2e" stroke-width="2.5"/>
+  <!-- sọc đua -->
+  <rect x="30" y="4" width="4" height="123" fill="#7c7c7c" opacity="0.55"/>
+  <rect x="38" y="4" width="4" height="123" fill="#7c7c7c" opacity="0.55"/>
+  <!-- đèn pha -->
+  <ellipse cx="22" cy="10" rx="5" ry="2.6" fill="#fffbe6"/>
+  <ellipse cx="50" cy="10" rx="5" ry="2.6" fill="#fffbe6"/>
+  <!-- kính trước -->
+  <path d="M18 40 C26 35 46 35 54 40 L50 58 L22 58 Z" fill="url(#glass)"/>
+  <path d="M22 41 C28 38 34 38 38 38.5 L26 55 L23.5 55 Z" fill="#ffffff" opacity="0.18"/>
+  <!-- mui -->
+  <rect x="21" y="58" width="30" height="28" rx="6" fill="url(#roof)" stroke="#8a8a8a" stroke-width="1"/>
+  <!-- kính hậu -->
+  <path d="M22 86 L50 86 L53 99 C44 102 28 102 19 99 Z" fill="url(#glass)"/>
+  <!-- gương -->
+  <ellipse cx="9" cy="47" rx="3.5" ry="2.5" fill="#d9d9d9" stroke="#2a2a2e" stroke-width="1.2"/>
+  <ellipse cx="63" cy="47" rx="3.5" ry="2.5" fill="#d9d9d9" stroke="#2a2a2e" stroke-width="1.2"/>
+  <!-- cánh gió sau -->
+  <rect x="7" y="118" width="58" height="9" rx="3" fill="#2b2f37"/>
+  <rect x="10" y="119.5" width="52" height="2" rx="1" fill="#ffffff" opacity="0.25"/>
+  <!-- đèn hậu -->
+  <rect x="15" y="112" width="9" height="3" rx="1.5" fill="#5a5a5a"/>
+  <rect x="48" y="112" width="9" height="3" rx="1.5" fill="#5a5a5a"/>
+</svg>

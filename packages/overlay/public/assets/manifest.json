@@ -1,6 +1,6 @@
 {
-  "_doc": "Ảnh tuỳ chỉnh thay cho icon mặc định. Đường dẫn tương đối thư mục này. Xem docs/ASSETS.md. Để trống = dùng icon Fluent Emoji có sẵn.",
+  "_doc": "Ảnh tuỳ chỉnh. Bộ xe Kenney: node scripts/import-kenney.mjs <thư mục> (tự ghi vehiclePack). Xem docs/ASSETS.md. Để trống = dùng xe vẽ sẵn + icon Fluent Emoji.",
+  "vehiclePack": null,
   "vehicles": {},
-  "icons": {},
-  "facing": {}
+  "icons": {}
 }

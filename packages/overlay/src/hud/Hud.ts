@@ -1,5 +1,6 @@
 import type { Balance, FxEvent, Province, ProvincesFile, Snapshot } from '@srace/engine';
 import { assets } from '../assets.ts';
+import { textOn } from '../color.ts';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -10,11 +11,14 @@ function ico(name: string, cls = 'ico'): string {
 }
 
 const CTA_ROTATION: [string, string][] = [
-  ['speech-balloon', 'Gõ tên tỉnh (HN, SG, Nghệ An…) để vào đội!'],
-  ['red-heart', 'Thả tim = xe tỉnh bạn chạy nhanh hơn'],
-  ['rocket', 'Quà nhỏ tăng tốc · quà vừa bật NITRO'],
-  ['bomb', 'Quà lớn phá đội dẫn đầu · Follow/Share = khiên'],
+  ['speech-balloon', 'Gõ tên tỉnh (HN, SG, Nghệ An…) để vào đội'],
+  ['red-heart', 'Thả tim để xe tỉnh bạn chạy nhanh hơn'],
+  ['rocket', 'Quà nhỏ tăng tốc · quà vừa bật nitro'],
+  ['bomb', 'Quà lớn phá đội dẫn đầu · follow = khiên'],
 ];
+
+/** Loại toast → màu thanh bên trái (một kiểu toast duy nhất, chỉ khác điểm nhấn). */
+type ToastKind = 'info' | 'gift' | 'attack' | 'storm' | 'shield' | 'gold';
 
 /** HUD bằng DOM: thanh trạng thái, giờ vàng, CTA, bảng đua, toast, podium. */
 export class Hud {
@@ -35,6 +39,8 @@ export class Hud {
     $('stat-viewers').innerHTML = `${ico('eyes')}<span>0</span>`;
     $('stat-likes').innerHTML = `${ico('red-heart')}<span>0</span>`;
     $('stat-diamonds').innerHTML = `${ico('gem-stone')}<span>0</span>`;
+    const credit = document.querySelector('#corner .credit');
+    if (credit) credit.textContent = `Bản đồ: svg-maps (CC BY 4.0) · Icon: Fluent Emoji${assets.usingPack ? ' · Xe: Kenney' : ''}`;
     this.rows.clear();
     $('board-rows').innerHTML = '';
   }
@@ -52,10 +58,8 @@ export class Hud {
   private code(id: string) {
     return this.provinces.get(id)?.code ?? '??';
   }
-  private vehicleImg(id: string, cls = 'veh'): string {
-    if (!this.provincesFile) return '';
-    const { url } = assets.vehicle(this.provincesFile, id);
-    return url ? `<img class="${cls}" src="${url}" alt="">` : '';
+  private chip(id: string) {
+    return `<span class="chip" style="background:${this.color(id)}"></span>`;
   }
 
   setConnected(ok: boolean) {
@@ -80,15 +84,12 @@ export class Hud {
     let shown = remaining;
     if (s.phase === 'racing') shown = remaining + goldenSec;
     // giờ vàng: đồng hồ to màu vàng ngay trên thanh trạng thái (không đè bản đồ)
-    timer.innerHTML = s.paused ? '⏸' : s.phase === 'golden' ? `${ico('high-voltage', 'ico big')}${remaining}` : fmt(shown);
+    const timerHtml = s.paused ? '⏸' : s.phase === 'golden' ? `${ico('high-voltage', 'ico big')}${remaining}` : fmt(shown);
+    if (timer.innerHTML !== timerHtml) timer.innerHTML = timerHtml;
     timer.classList.toggle('gold', s.phase === 'golden');
     timer.classList.toggle('urgent', s.phase === 'golden' && remaining <= 10);
-    chip.innerHTML = {
-      lobby: `${ico('vertical-traffic-light')}CHUẨN BỊ`,
-      racing: `${ico('chequered-flag')}ĐANG ĐUA`,
-      golden: `${ico('gem-stone')}QUÀ ×2`,
-      podium: `${ico('trophy')}KẾT QUẢ`,
-    }[s.phase];
+    const chipHtml = { lobby: 'CHUẨN BỊ', racing: 'ĐANG ĐUA', golden: 'QUÀ ×2', podium: 'KẾT QUẢ' }[s.phase];
+    if (chip.textContent !== chipHtml) chip.textContent = chipHtml;
 
     // nhịp giây (cho âm thanh đếm ngược)
     if (remaining !== this.lastSecond) {
@@ -100,38 +101,37 @@ export class Hud {
     const cta = $('cta');
     const ctaText = $('cta-text');
     const ctaIco = $<HTMLImageElement>('cta-ico');
-    cta.className = 'cta';
+    let cls = 'cta';
     let icon = 'speech-balloon';
+    let text: string;
     if (s.phase === 'golden') {
-      cta.classList.add('golden');
+      cls += ' golden';
       icon = 'high-voltage';
-      ctaText.textContent = `QUÀ NHÂN ĐÔI còn ${remaining}s – tặng ngay cho tỉnh mình!`;
+      text = `Quà nhân đôi còn ${remaining}s – tặng cho tỉnh mình!`;
     } else if (s.lastSabotage && now - s.lastSabotage.at < 20000 && s.phase === 'racing') {
-      cta.classList.add('revenge');
+      cls += ' revenge';
       icon = 'collision';
-      ctaText.textContent = `${this.name(s.lastSabotage.toTeamId)} bị ${this.name(s.lastSabotage.fromTeamId)} phá! Tặng quà để trả đũa`;
+      text = `${this.name(s.lastSabotage.toTeamId)} bị phá! Tặng quà để trả đũa`;
     } else if (s.phase === 'lobby') {
-      ctaText.textContent = 'Gõ tên tỉnh (HN, SG, Nghệ An…) để vào đội ngay!';
+      text = 'Gõ tên tỉnh (HN, SG, Nghệ An…) để vào đội';
     } else if (s.phase === 'podium') {
       icon = 'chequered-flag';
-      ctaText.textContent = 'Ván mới bắt đầu ngay – gõ tên tỉnh để đổi/vào đội';
+      text = 'Ván mới sắp bắt đầu – gõ tên tỉnh để vào đội';
     } else {
       if (now > this.ctaSwitchAt) {
         this.ctaSwitchAt = now + 6000;
         this.ctaIdx = (this.ctaIdx + 1) % CTA_ROTATION.length;
       }
-      [icon, ctaText.textContent] = CTA_ROTATION[this.ctaIdx];
+      [icon, text] = CTA_ROTATION[this.ctaIdx];
     }
+    if (cta.className !== cls) cta.className = cls;
+    if (ctaText.textContent !== text) ctaText.textContent = text;
     const url = assets.iconUrl(icon) ?? '';
     if (ctaIco.getAttribute('src') !== url) ctaIco.src = url;
 
-    // ── bảng đua
     this.renderBoard(s, now);
-
-    // ── bảng giữa (lobby / podium)
     this.renderCenter(s, remaining);
 
-    // ── góc thống kê
     $('stat-viewers').querySelector('span')!.textContent = String(s.viewers);
     $('stat-likes').querySelector('span')!.textContent = fmtNum(s.totalLikes);
     $('stat-diamonds').querySelector('span')!.textContent = fmtNum(s.totalDiamonds);
@@ -144,7 +144,7 @@ export class Hud {
     $('board-count').textContent = `${s.teamCount} tỉnh`;
     if (shown.length === 0) {
       if (!host.querySelector('.board-empty')) {
-        host.innerHTML = `<div class="board-empty">${ico('speech-balloon', 'ico big')}<br>Chưa có đội nào.<br>Gõ tên tỉnh để mở đường đua!</div>`;
+        host.innerHTML = `<div class="board-empty">Chưa có đội nào<br><b>Gõ tên tỉnh để mở đường đua</b></div>`;
         this.rows.clear();
       }
       return;
@@ -162,11 +162,13 @@ export class Hud {
       if (!el) {
         el = document.createElement('div');
         el.className = 'brow';
-        el.innerHTML = `<div class="bar"></div><div class="rank"></div>${this.vehicleImg(t.id)}<div class="code"></div><div class="name"></div><div class="icons"></div><div class="meta"></div>`;
-        (el.querySelector('.bar') as HTMLElement).style.background = this.color(t.id);
-        (el.querySelector('.code') as HTMLElement).style.background = this.color(t.id);
-        el.querySelector('.code')!.textContent = this.code(t.id);
+        el.innerHTML = `<div class="rank"></div><div class="code"></div><div class="name"></div><div class="icons"></div><div class="meta"></div><div class="bar"></div>`;
+        const code = el.querySelector('.code') as HTMLElement;
+        code.style.background = this.color(t.id);
+        code.style.color = textOn(this.color(t.id));
+        code.textContent = this.code(t.id);
         el.querySelector('.name')!.textContent = this.name(t.id);
+        (el.querySelector('.bar') as HTMLElement).style.background = this.color(t.id);
         host.appendChild(el);
         this.rows.set(t.id, el);
       }
@@ -175,15 +177,18 @@ export class Hud {
       el.classList.toggle('slowed', t.slowUntil > now);
       (el.querySelector('.bar') as HTMLElement).style.width = `${Math.round(t.progress * 100)}%`;
       el.querySelector('.rank')!.textContent = String(i + 1);
+      // tối đa 2 icon trạng thái, ưu tiên cái quan trọng nhất
       const icons: string[] = [];
-      if (t.shields > 0) icons.push(ico('shield', 'ico sm'));
-      if (t.winStreak > 0) icons.push(ico('crown', 'ico sm') + (t.winStreak > 1 ? `<b>${t.winStreak}</b>` : ''));
-      if (t.nitroUntil > now) icons.push(ico('fire', 'ico sm'));
       if (t.slowUntil > now) icons.push(ico('collision', 'ico sm'));
-      const html = icons.join('');
+      else if (t.nitroUntil > now) icons.push(ico('fire', 'ico sm'));
+      if (t.shields > 0) icons.push(ico('shield', 'ico sm'));
+      else if (t.winStreak > 0) icons.push(ico('crown', 'ico sm'));
+      const html = icons.slice(0, 2).join('');
       const ie = el.querySelector('.icons')!;
       if (ie.innerHTML !== html) ie.innerHTML = html;
-      el.querySelector('.meta')!.innerHTML = `${ico('busts-in-silhouette', 'ico xs')}${t.members}<br>${ico('gem-stone', 'ico xs')}${fmtNum(t.diamondsRound)}`;
+      const meta = `${t.members}<span class="dot">·</span>${fmtNum(t.diamondsRound)}${ico('gem-stone', 'ico xs')}`;
+      const me = el.querySelector('.meta')!;
+      if (me.innerHTML !== meta) me.innerHTML = meta;
     });
   }
 
@@ -198,48 +203,50 @@ export class Hud {
     const sub = $('center-sub');
     const list = $('center-list');
     const foot = $('center-foot');
+    const setHtml = (el: HTMLElement, html: string) => {
+      if (el.innerHTML !== html) el.innerHTML = html;
+    };
     if (s.phase === 'lobby') {
-      title.textContent = `VÁN ${s.round} SẮP BẮT ĐẦU`;
-      sub.textContent = s.teamCount === 0 ? 'Gõ tên tỉnh của bạn để mở đường đua!' : `${s.teamCount} tỉnh đã sẵn sàng · Gõ tên tỉnh để vào đội`;
+      setHtml(title, `VÁN ${s.round} SẮP BẮT ĐẦU`);
+      sub.textContent = s.teamCount === 0 ? 'Gõ tên tỉnh của bạn để mở đường đua' : `${s.teamCount} tỉnh đã sẵn sàng · gõ tên tỉnh để vào đội`;
       const w = s.lastResult?.winnerTeamId ? s.teams.find((t) => t.id === s.lastResult!.winnerTeamId) : undefined;
-      const streak = w && w.winStreak > 1 ? ` · thắng ${w.winStreak} ván liên tiếp` : '';
-      const html = s.lastResult?.winnerTeamId
-        ? `<div class="row">${ico('trophy', 'ico medal')}${this.vehicleImg(s.lastResult.winnerTeamId)}<span>Vô địch ván trước: ${this.name(s.lastResult.winnerTeamId)}${streak}</span></div>`
-        : '';
-      if (list.innerHTML !== html) list.innerHTML = html;
-      foot.innerHTML = `${ico('vertical-traffic-light')}Xuất phát sau ${remaining}s`;
+      const streak = w && w.winStreak > 1 ? ` · thắng ${w.winStreak} ván liền` : '';
+      setHtml(
+        list,
+        s.lastResult?.winnerTeamId
+          ? `<div class="row">${ico('trophy', 'ico medal')}${this.chip(s.lastResult.winnerTeamId)}<span>Vô địch ván trước: ${this.name(s.lastResult.winnerTeamId)}${streak}</span></div>`
+          : '',
+      );
+      setHtml(foot, `Xuất phát sau ${remaining}s`);
       return;
     }
     // podium
     const r = s.lastResult;
     if (!r || !r.winnerTeamId) {
-      title.textContent = 'HẾT VÁN';
+      setHtml(title, 'HẾT VÁN');
       sub.textContent = 'Chưa có đội nào về đích';
-      list.innerHTML = '';
-      foot.textContent = `Ván mới sau ${remaining}s`;
+      setHtml(list, '');
+      setHtml(foot, `Ván mới sau ${remaining}s`);
       return;
     }
     const w = s.teams.find((t) => t.id === r.winnerTeamId);
-    title.innerHTML = `${ico('trophy', 'ico big')}${this.name(r.winnerTeamId).toUpperCase()} VÔ ĐỊCH VÁN ${r.round}`;
-    sub.textContent = r.finishedEarly ? 'Về đích Lũng Cú trước giờ!' : w && w.winStreak > 1 ? `Thắng ${w.winStreak} ván liên tiếp!` : 'Cả nước ơi, ván sau lật kèo nhé!';
+    setHtml(title, `${ico('trophy', 'ico big')}${this.name(r.winnerTeamId).toUpperCase()} VÔ ĐỊCH`);
+    sub.textContent = r.finishedEarly ? 'Về đích Lũng Cú trước giờ!' : w && w.winStreak > 1 ? `Thắng ${w.winStreak} ván liền!` : `Ván ${r.round} · ván sau lật kèo nhé!`;
     const medals = ['1st-place-medal', '2nd-place-medal', '3rd-place-medal'];
     let html = r.podium
-      .map(
-        (p, i) =>
-          `<div class="row">${ico(medals[i], 'ico medal')}${this.vehicleImg(p.teamId)}<span class="chip" style="background:${this.color(p.teamId)}"></span><span>${this.name(p.teamId)}</span><span class="pct">${Math.round(p.progress * 100)}%</span></div>`,
-      )
+      .map((p, i) => `<div class="row">${ico(medals[i], 'ico medal')}${this.chip(p.teamId)}<span>${this.name(p.teamId)}</span><span class="pct">${Math.round(p.progress * 100)}%</span></div>`)
       .join('');
-    if (r.mvp) html += `<div class="row">${ico('glowing-star', 'ico medal')}<span>MVP: ${esc(r.mvp.nickname)} (${this.name(r.mvp.teamId)}) · ${fmtNum(r.mvp.diamonds)}</span>${ico('gem-stone', 'ico sm')}</div>`;
-    if (list.innerHTML !== html) list.innerHTML = html;
-    foot.textContent = `Ván ${r.round + 1} bắt đầu sau ${remaining}s`;
+    if (r.mvp) html += `<div class="row mvp">${ico('glowing-star', 'ico medal')}<span>MVP ${esc(r.mvp.nickname)} · ${this.name(r.mvp.teamId)}</span><span class="pct">${fmtNum(r.mvp.diamonds)}${ico('gem-stone', 'ico sm')}</span></div>`;
+    setHtml(list, html);
+    setHtml(foot, `Ván ${r.round + 1} bắt đầu sau ${remaining}s`);
   }
 
-  toast(text: string, cls = '', ms = 3200, icon?: string) {
+  toast(text: string, kind: ToastKind = 'info', ms = 3200, icon?: string) {
     const host = $('toasts');
-    while (host.childElementCount >= 3) host.firstElementChild?.remove();
+    while (host.childElementCount >= 2) host.firstElementChild?.remove();
     const el = document.createElement('div');
-    el.className = `toast ${cls}`;
-    el.innerHTML = `${icon ? ico(icon) : ''}<span>${esc(text, 120)}</span>`;
+    el.className = `toast ${kind}`;
+    el.innerHTML = `${icon ? ico(icon) : ''}<span>${esc(text, 90)}</span>`;
     host.appendChild(el);
     setTimeout(() => {
       el.classList.add('out');
@@ -250,54 +257,44 @@ export class Hud {
   handleFx(f: FxEvent, now: number) {
     switch (f.kind) {
       case 'join': {
-        if (now - this.lastJoinToast < 2500) return;
+        if (now - this.lastJoinToast < 4000) return;
         this.lastJoinToast = now;
         const via = f.viaOldName ? ` (${f.viaOldName})` : '';
-        this.toast(
-          f.switched ? `${esc(f.nickname)} chuyển sang đội ${this.name(f.teamId)}` : `${esc(f.nickname)} vào đội ${this.name(f.teamId)}${via}`,
-          'join',
-          2200,
-          f.switched ? 'repeat-button' : f.auto ? 'game-die' : 'speech-balloon',
-        );
+        this.toast(f.switched ? `${esc(f.nickname)} sang đội ${this.name(f.teamId)}` : `${esc(f.nickname)} vào đội ${this.name(f.teamId)}${via}`, 'info', 2200, 'speech-balloon');
         break;
       }
       case 'nitro':
-        if (f.tier === 'small') return;
+        if (f.tier === 'small' || f.tier === 'medium') return; // quà nhỏ/vừa chỉ hiện chữ nổi trên xe
         this.toast(
-          f.tier === 'super'
-            ? `${esc(f.nickname)} tặng ${f.diamonds} kim cương – BÃO cho ${this.name(f.teamId)}!`
-            : f.tier === 'large'
-              ? `${esc(f.nickname)} (${this.name(f.teamId)}) tặng ${f.diamonds} kim cương – PHÁ ĐỘI DẪN ĐẦU!`
-              : `${esc(f.nickname)} bật nitro cho ${this.name(f.teamId)} +${f.diamonds}${f.golden ? ' ×2' : ''}`,
-          'nitro',
+          f.tier === 'super' ? `${esc(f.nickname)} gọi BÃO cho ${this.name(f.teamId)}` : `${esc(f.nickname)} tặng ${f.diamonds} – ${this.name(f.teamId)} phá đội dẫn đầu`,
+          'gift',
           3200,
-          f.tier === 'super' ? 'tornado' : f.tier === 'large' ? 'bomb' : 'rocket',
+          f.tier === 'super' ? 'tornado' : 'bomb',
         );
         break;
       case 'sabotage':
-        this.toast(`${this.name(f.fromTeamId)} thả ổ gà cho ${this.name(f.toTeamId)}! ${this.name(f.toTeamId)} ơi, trả đũa đi!`, 'sabotage', 4000, 'collision');
+        this.toast(`${this.name(f.fromTeamId)} thả ổ gà cho ${this.name(f.toTeamId)}`, 'attack', 3600, 'collision');
         break;
       case 'storm':
-        this.toast(`BÃO từ ${this.name(f.teamId)} quét sạch ${f.hitTeamIds.length} đội!`, 'storm', 4500, 'tornado');
-        break;
+        break; // đã có toast từ nitro bậc siêu
       case 'shieldGain':
-        this.toast(`${esc(f.nickname)} ${f.source === 'follow' ? 'follow' : 'share'} – ${this.name(f.teamId)} có KHIÊN chống phá!`, 'shield', 3200, 'shield');
+        this.toast(`${this.name(f.teamId)} có khiên chống phá`, 'shield', 2600, 'shield');
         break;
       case 'shieldBreak':
-        this.toast(`Khiên của ${this.name(f.teamId)} đỡ được cú phá từ ${this.name(f.attackerTeamId)}!`, 'shield', 3200, 'shield');
+        this.toast(`Khiên ${this.name(f.teamId)} đỡ được cú phá`, 'shield', 2600, 'shield');
         break;
       case 'combo':
-        this.toast(`COMBO ${this.name(f.teamId)}! Quà tiếp theo +25% trong 10s`, 'combo', 3200, 'fire');
+        this.toast(`Combo ${this.name(f.teamId)}! Quà +25% trong 10s`, 'gold', 2600, 'fire');
         break;
       case 'overtake':
-        this.toast(`${this.name(f.teamId)} vượt lên dẫn đầu!`, 'overtake', 2500, 'high-voltage');
+        this.toast(`${this.name(f.teamId)} vượt lên dẫn đầu`, 'info', 2200, 'high-voltage');
         break;
       case 'finish':
-        this.toast(`${this.name(f.teamId)} VỀ ĐÍCH LŨNG CÚ!`, 'overtake', 5000, 'chequered-flag');
+        this.toast(`${this.name(f.teamId)} về đích Lũng Cú!`, 'gold', 4000, 'chequered-flag');
         break;
       case 'phase':
-        if (f.phase === 'racing') this.toast('XUẤT PHÁT! Từ Cà Mau ra Hà Giang!', 'overtake', 3000, 'vertical-traffic-light');
-        if (f.phase === 'golden') this.toast('GIỜ VÀNG – mọi quà nhân đôi!', 'combo', 4000, 'high-voltage');
+        if (f.phase === 'racing') this.toast('Xuất phát! Cà Mau → Lũng Cú', 'info', 2600, 'vertical-traffic-light');
+        if (f.phase === 'golden') this.toast('Giờ vàng – mọi quà nhân đôi', 'gold', 3600, 'high-voltage');
         break;
     }
   }

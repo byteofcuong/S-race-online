@@ -30,6 +30,8 @@ interface FxSprite {
 /** Hạt (lửa, khói, confetti), sprite hiệu ứng (va chạm, lốc, tim), mưa bão, chớp, rung màn hình. */
 export class Effects {
   readonly view = new Container();
+  /** lớp mặt đường (dưới xe): ổ gà */
+  readonly ground = new Container();
   private particles: Particle[] = [];
   private pool: Graphics[] = [];
   private sprites: FxSprite[] = [];
@@ -49,7 +51,7 @@ export class Effects {
     this.flash.rect(0, 0, W, H).fill({ color: 0xffffff, alpha: 1 });
     this.flash.alpha = 0;
     this.view.addChild(this.dark, this.rain, this.flash);
-    for (const n of ['collision', 'tornado', 'cloud-with-lightning-and-rain', 'red-heart', 'party-popper', 'sparkles', 'shield', 'high-voltage']) {
+    for (const n of ['collision', 'tornado', 'red-heart', 'party-popper', 'sparkles', 'shield']) {
       void assets.icon(n).then((t) => t && this.tex.set(n, t));
     }
   }
@@ -81,21 +83,20 @@ export class Effects {
     this.sprites.push({ s, vx: opts.vx ?? 0, vy: opts.vy ?? 0, life: 0, max: opts.life ?? 0.8, from: base * 0.4, to: base * (opts.to ?? 1.3), spin: opts.spin ?? 0, fadeIn: opts.fadeIn ?? false });
   }
 
-  /** lửa nitro (hạt) phía sau xe */
-  flame(x: number, y: number, dir: number, intensity = 1) {
-    const n = Math.ceil(2 * intensity);
+  /** lửa nitro (hạt) phía sau xe; angle = hướng chạy */
+  flame(x: number, y: number, angle: number, intensity = 1) {
+    const back = angle + Math.PI;
+    const n = intensity > 1 ? 3 : 2;
+    const colors = [0xffd166, 0xffb703, 0xfb8500];
     for (let i = 0; i < n; i++) {
-      const spread = (Math.random() - 0.5) * 0.8;
-      const sp = 120 + Math.random() * 140 * intensity;
-      const colors = [0xfff3b0, 0xffb703, 0xfb5607, 0xff006e];
-      this.spawn(x + (Math.random() - 0.5) * 8, y + (Math.random() - 0.5) * 8, colors[Math.floor(Math.random() * colors.length)], 4 + Math.random() * 5 * intensity, -dir * Math.cos(spread) * sp, Math.sin(spread) * sp * 0.5, 0.3 + Math.random() * 0.3, -8, 0, true);
+      const spread = (Math.random() - 0.5) * 0.7;
+      const sp = 90 + Math.random() * 90 * intensity;
+      this.spawn(x, y, colors[i % colors.length], 3 + Math.random() * 3 * intensity, Math.cos(back + spread) * sp, Math.sin(back + spread) * sp, 0.22 + Math.random() * 0.2, -6, 0, true);
     }
   }
 
   smoke(x: number, y: number) {
-    for (let i = 0; i < 2; i++) {
-      this.spawn(x + (Math.random() - 0.5) * 20, y + (Math.random() - 0.5) * 20, 0x777777, 6 + Math.random() * 8, (Math.random() - 0.5) * 40, -30 - Math.random() * 40, 0.8 + Math.random() * 0.6, 10, 0);
-    }
+    this.spawn(x + (Math.random() - 0.5) * 16, y + (Math.random() - 0.5) * 16, 0x9a9a9a, 5 + Math.random() * 6, (Math.random() - 0.5) * 30, -25 - Math.random() * 30, 0.7 + Math.random() * 0.4, 8, 0);
   }
 
   burst(x: number, y: number, color: number, count = 24, speed = 260) {
@@ -115,31 +116,28 @@ export class Effects {
 
   confetti(x: number, y: number) {
     const colors = [0xffd166, 0x06d6a0, 0x4cc9f0, 0xff4d6d, 0xffffff];
-    for (let i = 0; i < 90; i++) {
+    for (let i = 0; i < 60; i++) {
       const a = -Math.PI / 2 + (Math.random() - 0.5) * 1.6;
       const sp = 300 + Math.random() * 400;
       this.spawn(x, y, colors[i % colors.length], 4 + Math.random() * 4, Math.cos(a) * sp, Math.sin(a) * sp, 1.5 + Math.random(), 0, 500);
     }
-    this.sprite('party-popper', x - 70, y - 30, { size: 90, to: 1.4, life: 1.6, spin: -0.3 });
-    this.sprite('party-popper', x + 70, y - 30, { size: 90, to: 1.4, life: 1.6, spin: 0.3 });
+    this.sprite('party-popper', x, y - 40, { size: 80, to: 1.3, life: 1.4 });
   }
 
   collision(x: number, y: number) {
-    this.sprite('collision', x, y - 30, { size: 110, to: 1.5, life: 0.9 });
-    for (let i = 0; i < 6; i++) this.smoke(x, y);
-    this.burst(x, y, 0xff4d6d, 16, 240);
-    this.kick(10);
+    this.sprite('collision', x, y - 10, { size: 80, to: 1.3, life: 0.8 });
+    for (let i = 0; i < 4; i++) this.smoke(x, y);
+    this.kick(6);
   }
 
   shieldBreak(x: number, y: number) {
-    this.sprite('shield', x, y - 30, { size: 80, to: 2, life: 0.7 });
-    this.burst(x, y - 20, 0x9ae8ff, 40, 330);
-    this.kick(5);
+    this.sprite('shield', x, y - 10, { size: 56, to: 1.8, life: 0.6 });
+    this.burst(x, y, 0xbdefff, 18, 260);
+    this.kick(3);
   }
 
   shieldGain(x: number, y: number) {
-    this.sprite('sparkles', x, y - 40, { size: 70, to: 1.6, life: 0.9, spin: 0.5 });
-    this.burst(x, y - 20, 0x4cc9f0, 18, 200);
+    this.sprite('sparkles', x, y - 20, { size: 48, to: 1.4, life: 0.8 });
   }
 
   pothole(x: number, y: number, sec: number, now: number) {
@@ -148,7 +146,7 @@ export class Effects {
     g.ellipse(-4, -3, 12, 6).fill({ color: 0x000000, alpha: 0.5 });
     g.ellipse(0, 0, 24, 14).stroke({ width: 3, color: 0x8a5a2b, alpha: 0.9 });
     g.position.set(x, y);
-    this.view.addChildAt(g, 3);
+    this.ground.addChild(g);
     this.potholes.push({ g, until: now + sec * 1000 });
   }
 
@@ -156,13 +154,10 @@ export class Effects {
     this.rainUntil = now + sec * 1000;
     this.dark.visible = true;
     this.rain.visible = true;
-    this.flashAlpha = 0.9;
-    this.shake = Math.max(this.shake, 18);
+    this.flashAlpha = 0.6;
+    this.shake = Math.max(this.shake, 10);
     const y = TRACK_TOP + (TRACK_BOTTOM - TRACK_TOP) * 0.45;
-    this.sprite('tornado', -80, y, { size: 200, to: 1, life: sec, vx: (W + 200) / sec, spin: 0, fadeIn: true });
-    this.sprite('cloud-with-lightning-and-rain', 220, TRACK_TOP + 40, { size: 120, to: 1.1, life: sec, vx: 40, fadeIn: true });
-    this.sprite('cloud-with-lightning-and-rain', 800, TRACK_TOP + 90, { size: 140, to: 1.1, life: sec, vx: -30, fadeIn: true });
-    this.sprite('high-voltage', W / 2, TRACK_TOP + 120, { size: 160, to: 1.6, life: 0.6 });
+    this.sprite('tornado', -80, y, { size: 180, to: 1, life: sec, vx: (W + 200) / sec, spin: 0, fadeIn: true });
   }
 
   kick(amount = 8) {
@@ -216,14 +211,14 @@ export class Effects {
     if (this.rainUntil > now) {
       this.rain.clear();
       const t = now / 1000;
-      for (let i = 0; i < 80; i++) {
+      for (let i = 0; i < 60; i++) {
         const x = ((i * 137 + t * 900) % (W + 100)) - 50;
         const y = TRACK_TOP - 60 + ((i * 311 + t * 1400) % (TRACK_BOTTOM - TRACK_TOP + 120));
         this.rain.moveTo(x, y).lineTo(x - 10, y + 34);
       }
       this.rain.stroke({ width: 3, color: 0xbde0fe, alpha: 0.65 });
       this.dark.alpha = 0.6 + Math.sin(t * 20) * 0.1;
-      if (Math.random() < dt * 1.2) this.flashAlpha = 0.6;
+      if (Math.random() < dt * 0.6) this.flashAlpha = 0.35;
     } else if (this.rain.visible) {
       this.rain.visible = false;
       this.dark.visible = false;

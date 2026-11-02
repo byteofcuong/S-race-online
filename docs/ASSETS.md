@@ -1,84 +1,86 @@
 # Hình ảnh & cách thay bằng ảnh của bạn
 
+## Nguyên tắc hình ảnh
+
+Màn hình live nhỏ và chật, nên overlay giữ **ít thứ, đồng bộ**:
+
+- Đất liền một tông cát; chỉ tỉnh của 8 đội đang hiện trên đường được tô màu đội.
+- Tất cả xe là **cùng một bộ xe nhìn từ trên**, thân xe nhuộm màu đội. Màu tỉnh lấy cùng độ bão hoà và độ sáng nên không chói.
+- HUD dùng một kiểu thẻ kính tối, chữ trắng, một màu nhấn vàng. Icon Fluent Emoji chỉ dùng nhỏ và ít.
+- Chỉ 6 nhãn thành phố + 2 quần đảo. Không mây, không sóng.
+
 ## Hiện tại dùng gì
 
 | Thành phần | Nguồn | Giấy phép |
 |---|---|---|
-| Bản đồ 34 tỉnh + Hoàng Sa, Trường Sa | `@svg-maps/vietnam` → `packages/overlay/src/assets/vietnam.json` (script `scripts/extract-map.mjs`) | CC BY 4.0 (đã ghi credit ở góc overlay và docs/CREDITS.md) |
-| Phương tiện 7 vùng, icon HUD/hiệu ứng | Microsoft Fluent Emoji 3D → `packages/overlay/src/assets/icons/*.svg` (script `scripts/extract-icons.mjs`, danh sách `scripts/icons.list`) | MIT |
-| Font Be Vietnam Pro | `packages/overlay/public/fonts/` (script `scripts/fetch-fonts.mjs`) | OFL |
-| Đường đua, biển, mây, hạt lửa/khói/confetti | vẽ bằng code (PixiJS) | – |
+| Bản đồ 34 tỉnh + Hoàng Sa, Trường Sa | `@svg-maps/vietnam` → `packages/overlay/src/assets/vietnam.json` (`scripts/extract-map.mjs`) | CC BY 4.0, ghi credit ở góc overlay |
+| Xe mặc định | `packages/overlay/src/assets/vehicles/car-topdown.svg` (vẽ riêng, thang xám để nhuộm màu) | thuộc dự án |
+| Icon HUD, hiệu ứng | Microsoft Fluent Emoji → `packages/overlay/src/assets/icons/*.svg` (`scripts/extract-icons.mjs`, danh sách `scripts/icons.list`) | MIT |
+| Font Be Vietnam Pro | `packages/overlay/public/fonts/` (`scripts/fetch-fonts.mjs`) | OFL |
 
-Phương tiện mặc định theo vùng (sửa trong `config/provinces.json` → `regions[].vehicle`, hoặc ghi đè từng tỉnh bằng `vehicle`):
+## Dùng bộ xe Kenney Racing Pack (khuyên dùng)
 
-| Vùng | Icon | Ý nghĩa |
-|---|---|---|
-| tay-nam-bo | `canoe` | ghe miền Tây |
-| dong-nam-bo | `motor-scooter` | xe máy Sài Gòn |
-| nam-trung-bo | `bus` | xe khách giường nằm |
-| tay-nguyen | `elephant` | voi Buôn Đôn |
-| bac-trung-bo | `automobile` | ô tô |
-| dong-bang-bac-bo | `bicycle` | xe đạp phố cổ |
-| mien-nui-bac | `sport-utility-vehicle` | xe địa hình |
+Bộ xe đua nhìn từ trên rất đẹp, miễn phí, giấy phép CC0.
 
-Bất kỳ icon nào trong `scripts/icons.list` đều dùng được làm phương tiện; thêm tên vào list rồi chạy `node scripts/extract-icons.mjs`.
+1. Tải zip tại https://kenney.nl/assets/racing-pack và giải nén.
+2. Chạy:
 
-## Thay bằng ảnh của bạn (AI / designer)
+   ```bash
+   node scripts/import-kenney.mjs "đường/dẫn/thư-mục/đã-giải-nén"
+   npm run build
+   ```
 
-1. Đặt file PNG vào `packages/overlay/public/assets/` (ví dụ `vehicles/ghe.png`, `icons/fire.png`).
-2. Khai báo trong `packages/overlay/public/assets/manifest.json`:
+   Script tìm các file `car_<màu>_<số>.png` và `motorcycle_<màu>.png`, chọn một màu làm ảnh gốc, copy vào `packages/overlay/public/assets/vehicles/kenney/` và ghi `vehiclePack` vào `packages/overlay/public/assets/manifest.json`.
+3. Mỗi vùng tự được gán một dáng xe khác nhau trong bộ; Đông Nam Bộ dùng xe máy nếu bộ có ảnh xe máy. Màu thân xe vẫn theo màu đội.
+4. Gỡ bộ xe: `node scripts/import-kenney.mjs --reset`.
+
+> Script đã được kiểm tra với một bộ ảnh giả đặt tên theo kiểu Kenney, **chưa chạy với file zip thật** của Kenney. Nếu tên file trong zip khác, script báo không tìm thấy; nếu xe chạy ngang hoặc lùi, sửa `"nose"` trong manifest thành `down`, `left` hoặc `right`.
+
+Chỉnh dáng xe theo vùng hoặc theo tỉnh trong `manifest.json`:
 
 ```json
-{
-  "vehicles": {
-    "region:tay-nam-bo": "vehicles/ghe.png",
-    "region:dong-nam-bo": "vehicles/xe-may.png",
-    "ha-noi": "vehicles/ha-noi.png"
-  },
-  "icons": {
-    "fire": "icons/lua.png",
-    "shield": "icons/khien.png"
-  },
-  "facing": { "region:tay-nam-bo": "left" }
+"vehiclePack": {
+  "dir": "vehicles/kenney",
+  "shape": "car_yellow_{n}.png",
+  "nose": "up",
+  "variants": {
+    "default": 1,
+    "region:tay-nam-bo": 3,
+    "region:dong-nam-bo": "motorcycle_yellow.png",
+    "ha-noi": 5
+  }
 }
 ```
 
-   - Khoá phương tiện: `"<id tỉnh>"` (ưu tiên cao nhất) → `"region:<id vùng>"` → `"<tên icon>"`.
-   - `facing`: ảnh của bạn quay mặt sang **trái** (mặc định) hay **phải**; overlay tự lật theo chiều chạy.
-   - Thiếu file hoặc lỗi → tự dùng icon mặc định, không vỡ overlay.
-3. Trong control bấm **Nạp lại ảnh** (hoặc tải lại overlay). Khi chạy `npm run dev`, Vite phục vụ `public/` trực tiếp; khi `npm start`, chạy `npm run build` lại để copy vào `dist/`.
+Thứ tự ưu tiên: id tỉnh → `region:<vùng>` → `default`.
 
-### Quy cách ảnh
+## Thay bằng ảnh của bạn (AI / designer)
 
-- PNG nền trong suốt, **512×512** (phương tiện) hoặc **256×256** (icon). Overlay hiển thị phương tiện cao ~64px, icon 24–110px.
-- Phương tiện: nhìn ngang hoặc 3/4, **quay mặt sang trái**, chân xe sát mép dưới, căn giữa ngang, không có bóng đổ (overlay tự vẽ bóng + vòng màu đội).
-- Không chữ, không nền, không viền ảnh. Màu rực, viền dày, sáng để nổi trên nền biển xanh.
-- Tên file không dấu, chữ thường.
+Đặt PNG vào `packages/overlay/public/assets/` rồi khai báo:
 
-### Bộ prompt tạo ảnh đồng bộ phong cách (Midjourney / Ideogram / DALL·E)
+```json
+{
+  "vehicles": { "region:tay-nam-bo": "vehicles/ghe.png", "ha-noi": "vehicles/ha-noi.png" },
+  "icons": { "fire": "icons/lua.png", "shield": "icons/khien.png" }
+}
+```
 
-Hậu tố chung (dán vào cuối mọi prompt):
+`vehicles` ưu tiên cao hơn `vehiclePack`. Thiếu file hoặc lỗi thì tự quay về xe vẽ sẵn, không vỡ overlay. Bấm **Nạp lại ảnh** trong control hoặc `npm run build` lại.
 
-> `cute 3D cartoon game asset, bright saturated colors, soft studio lighting, thick clean outline, slightly chunky proportions, side view facing left, centered, isolated on plain white background, no text, no shadow on ground --ar 1:1`
+### Quy cách ảnh xe
 
-(Xoá nền trắng bằng công cụ remove-background, hoặc dùng mô hình hỗ trợ nền trong suốt.)
+- **Nhìn từ trên xuống, mũi xe hướng lên**, nền trong suốt, khoảng 128×256 px.
+- Thân xe màu **trắng hoặc xám sáng**: overlay nhuộm theo màu đội, nên phần sáng sẽ thành màu đội, phần tối (kính, lốp) giữ tối. Ảnh màu bất kỳ vẫn dùng được vì overlay tự chuyển sang thang xám, nhưng ảnh trắng cho màu chuẩn nhất.
+- Không bóng đổ, không chữ, không viền ảnh.
 
-| File | Prompt |
-|---|---|
-| `vehicles/ghe.png` | Vietnamese wooden sampan boat with a small motor, a basket of fruit on board, friendly cartoon style |
-| `vehicles/xe-may.png` | Vietnamese delivery motorbike stacked with colorful goods and a plastic stool, cartoon style |
-| `vehicles/xe-khach.png` | Vietnamese sleeper coach bus, white and orange, friendly cartoon style |
-| `vehicles/voi.png` | friendly cartoon elephant wearing a colorful woven blanket, Central Highlands Vietnam |
-| `vehicles/o-to.png` | small cheerful hatchback car, red, cartoon style |
-| `vehicles/xe-dap.png` | classic Hanoi city bicycle with a basket of flowers, cartoon style |
-| `vehicles/xe-dia-hinh.png` | compact off-road 4x4 with roof rack and mud guards, green, cartoon style |
-| `icons/lua.png` | stylized nitro flame burst, orange and yellow, cartoon game icon |
-| `icons/khien.png` | glossy blue shield with a star, cartoon game icon |
-| `icons/o-ga.png` | cartoon pothole with cracked asphalt, top-down, game icon |
-| `icons/bao.png` | cartoon tornado with a stormy cloud, game icon |
+Prompt gợi ý (Midjourney / Ideogram), giữ nguyên hậu tố cho cả bộ:
 
-Mẹo: tạo cả 7 phương tiện trong **một phiên** với cùng seed/style reference để đồng bộ; xuất tất cả cùng kích thước; kiểm tra ở độ cao 64px xem còn nhận ra hình không.
+> `top-down view of a [Vietnamese wooden sampan boat | delivery motorbike | sleeper coach bus | city bicycle | compact 4x4], facing up, plain white body with dark windows, clean cartoon game asset, thick outline, soft shading, isolated on transparent background, no text, no shadow --ar 1:2`
 
-### Bản đồ nền tuỳ chỉnh
+## Tạo lại asset từ nguồn
 
-`manifest.json` → `"map": { "background": "map/bg.png" }` (1080×1920, phủ toàn khung, vùng biển/trời). Hiện tại đây là chỗ dành sẵn; nền biển đang vẽ bằng CSS/gradient + sóng, đất liền luôn vẽ từ dữ liệu bản đồ để tô màu theo đội.
+```bash
+node scripts/extract-map.mjs     # bản đồ
+node scripts/extract-icons.mjs   # icon trong scripts/icons.list
+node scripts/fetch-fonts.mjs     # font
+```
