@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, initial-scale=1" />
+    <title>Đường Đua Chữ S</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;700;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <div id="stage">
+      <div id="canvas-host"></div>
+
+      <!-- HUD: DOM đè lên canvas -->
+      <div id="hud">
+        <div id="statusbar" class="zone">
+          <div class="round-chip"><span class="label">VÁN</span><span id="round-no">1</span></div>
+          <div id="timer" class="timer">0:00</div>
+          <div id="phase-chip" class="phase-chip">CHUẨN BỊ</div>
+        </div>
+
+        <div id="toasts" class="toasts"></div>
+
+        <div id="center" class="center hidden">
+          <div id="center-title" class="center-title"></div>
+          <div id="center-sub" class="center-sub"></div>
+          <div id="center-list" class="center-list"></div>
+          <div id="center-foot" class="center-foot"></div>
+        </div>
+
+        <div id="cta" class="cta"><span id="cta-text">💬 Gõ tên tỉnh để vào đội!</span></div>
+
+        <div id="board" class="board">
+          <div class="board-head"><span>BẢNG ĐUA</span><span id="board-count">0 tỉnh</span></div>
+          <div id="board-rows"></div>
+        </div>
+
+        <div id="corner" class="corner">
+          <span id="stat-viewers">👀 0</span><span id="stat-likes">❤️ 0</span><span id="stat-diamonds">💎 0</span>
+        </div>
+
+        <div id="safezone" class="safezone hidden">
+          <div class="sz sz-top">Header TikTok</div>
+          <div class="sz sz-cta">Banner quà / ghim (thỉnh thoảng)</div>
+          <div class="sz sz-comments">Khung bình luận</div>
+          <div class="sz sz-bottom">Thanh nhập + nút quà</div>
+        </div>
+
+        <div id="conn" class="conn">Đang kết nối server…</div>
+      </div>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,59 @@
+{
+  "_note": "Mọi con số cân bằng của game. Server tự nạp lại khi file này thay đổi, không cần restart. progress = quãng đường 0..1 (1 = về đích Hà Giang).",
+
+  "round": {
+    "lobbySec": 15,
+    "raceSec": 180,
+    "goldenSec": 45,
+    "podiumSec": 10
+  },
+
+  "speed": {
+    "base": 0.003,
+    "rubberBand": [0.15, 0.10, 0.05],
+    "rubberBandMinTeams": 3,
+    "rubberBandInGolden": false
+  },
+
+  "display": {
+    "maxCars": 8
+  },
+
+  "like": {
+    "perLikes": 10,
+    "boost": 0.002,
+    "unassignedToLast": true
+  },
+
+  "gift": {
+    "perDiamond": 0.0008,
+    "perDiamondAbove100": 0.0002,
+    "capPerGift": 0.30,
+    "goldenMultiplier": 2,
+    "tiers": {
+      "small": { "min": 1, "max": 9, "boostSec": 3 },
+      "medium": { "min": 10, "max": 99, "boostSec": 4 },
+      "large": { "min": 100, "max": 999, "boostSec": 4, "sabotageSec": 4, "pushBack": 0.02 },
+      "super": { "min": 1000, "boostSec": 6, "stormSec": 3, "pushBack": 0.02 }
+    },
+    "combo": { "windowSec": 10, "minGifts": 3, "bonus": 0.25, "activeSec": 10 }
+  },
+
+  "slow": {
+    "baseFactor": 0,
+    "boostFactor": 0.5
+  },
+
+  "shield": {
+    "followPct": 100,
+    "sharePct": 25,
+    "maxShields": 1
+  },
+
+  "team": {
+    "switchesPerRound": 1,
+    "autoAssignUnmatched": true,
+    "newTeamJoinAtLast": true,
+    "finishEndsRound": true
+  }
+}

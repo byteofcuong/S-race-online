@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Điều khiển – Đường Đua Chữ S</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #0f1222; color: #eef; }
+  header { padding: 14px 20px; background: #161a33; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  header h1 { font-size: 18px; margin: 0; }
+  .pill { padding: 4px 10px; border-radius: 999px; background: #243; font-size: 13px; }
+  .pill.bad { background: #522; }
+  main { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; padding: 14px 20px; }
+  section { background: #161a33; border-radius: 12px; padding: 14px; }
+  h2 { font-size: 15px; margin: 0 0 10px; opacity: .85; text-transform: uppercase; letter-spacing: 1px; }
+  button { background: #2c3568; color: #fff; border: 0; border-radius: 8px; padding: 9px 12px; margin: 3px 4px 3px 0; cursor: pointer; font-size: 14px; }
+  button:hover { background: #3a468a; }
+  button.danger { background: #7a2b3a; }
+  button.gold { background: #8a6b14; }
+  button.primary { background: #1f7a5a; }
+  input, select { background: #0f1222; color: #fff; border: 1px solid #334; border-radius: 8px; padding: 8px; font-size: 14px; }
+  label { display: inline-flex; gap: 6px; align-items: center; margin: 4px 8px 4px 0; font-size: 14px; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
+  pre { background: #0b0d1a; padding: 10px; border-radius: 8px; max-height: 260px; overflow: auto; font-size: 12px; margin: 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td, th { padding: 4px 6px; text-align: left; border-bottom: 1px solid #223; }
+  .chip { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
+  small { opacity: .7; }
+  #msg { font-size: 13px; opacity: .85; min-height: 18px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🏁 Đường Đua Chữ S – điều khiển</h1>
+  <span id="st-phase" class="pill">…</span>
+  <span id="st-ws" class="pill">overlay: 0</span>
+  <span id="st-src" class="pill">nguồn: …</span>
+  <a href="/" target="_blank" style="color:#9cf;font-size:13px">Mở overlay ↗</a>
+  <span id="msg"></span>
+</header>
+<main>
+  <section>
+    <h2>Ván đua</h2>
+    <div class="row">
+      <button class="primary" onclick="api('/api/round/skip')">⏭ Nhảy pha kế tiếp</button>
+      <button onclick="api('/api/round/restart')">🔄 Ván mới ngay</button>
+      <button id="btn-pause" onclick="togglePause()">⏸ Tạm dừng</button>
+      <button class="danger" onclick="if(confirm('Xoá hết đội và người chơi?'))api('/api/reset')">🗑 Reset buổi live</button>
+    </div>
+    <h2>Overlay</h2>
+    <div class="row">
+      <label><input type="checkbox" id="muted" onchange="settings()"> Tắt tiếng</label>
+      <label>Âm lượng <input type="range" id="volume" min="0" max="1" step="0.05" value="0.8" onchange="settings()"></label>
+      <label><input type="checkbox" id="safeZone" onchange="settings()"> Hiện khung UI TikTok (test bố cục)</label>
+    </div>
+    <small>Chỉnh số cân bằng trong <code>config/balance.json</code> – server tự nạp lại.</small>
+  </section>
+
+  <section>
+    <h2>Kết nối TikTok</h2>
+    <div class="row">
+      <input id="tt-user" placeholder="tên TikTok (không có @)" />
+      <button class="primary" onclick="api('/api/tiktok/connect',{username:v('tt-user')})">🔌 Kết nối</button>
+      <button onclick="api('/api/tiktok/disconnect')">Ngắt</button>
+    </div>
+    <div id="tt-status"><small>Chưa kết nối. Kênh phải đang LIVE. Cần EULER_API_KEY trong .env để ổn định.</small></div>
+  </section>
+
+  <section>
+    <h2>Giả lập – đám đông</h2>
+    <div class="row">
+      <label>Người <input id="crowd-users" type="number" value="200" style="width:80px"></label>
+      <label>Cường độ <input id="crowd-int" type="number" value="1" step="0.1" style="width:70px"></label>
+      <button class="primary" onclick="crowd(true)">▶ Bật đám đông</button>
+      <button onclick="crowd(false)">⏹ Tắt</button>
+    </div>
+    <h2>Kịch bản</h2>
+    <div class="row">
+      <button onclick="scenario('two-teams')">3 đội HN/SG/ĐN</button>
+      <button onclick="scenario('shield-vs-sabotage')">Khiên vs phá</button>
+      <button class="gold" onclick="scenario('storm')">Bão 2999💎</button>
+      <button onclick="scenario('rose-streak')">Streak 120 hoa hồng</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Giả lập – bắn 1 sự kiện</h2>
+    <div class="row">
+      <input id="ev-nick" placeholder="nickname" value="Khách Test" style="width:120px">
+      <input id="ev-user" placeholder="userId" value="t1" style="width:70px">
+    </div>
+    <div class="row">
+      <input id="ev-text" placeholder="bình luận, ví dụ: Nghệ An" value="Hà Nội" style="width:200px">
+      <button onclick="ev({type:'comment',text:v('ev-text')})">💬 Bình luận</button>
+    </div>
+    <div class="row">
+      <input id="ev-likes" type="number" value="20" style="width:70px">
+      <button onclick="ev({type:'like',count:+v('ev-likes')})">❤️ Tim</button>
+      <button onclick="ev({type:'follow'})">➕ Follow</button>
+      <button onclick="ev({type:'share'})">🔗 Share</button>
+    </div>
+    <div class="row">
+      <input id="ev-dia" type="number" value="10" style="width:80px"> 💎
+      <button onclick="gift(1)">🌹 1</button>
+      <button onclick="gift(10)">🌻 10</button>
+      <button onclick="gift(99)">🍷 99</button>
+      <button class="gold" onclick="gift(199)">🚢 199 (phá)</button>
+      <button class="gold" onclick="gift(1000)">🌌 1000 (bão)</button>
+      <button onclick="gift(+v('ev-dia'))">Tặng số ở ô</button>
+    </div>
+  </section>
+
+  <section style="grid-column: 1 / -1">
+    <h2>Trạng thái</h2>
+    <table id="teams"><thead><tr><th>#</th><th>Tỉnh</th><th>Tiến độ</th><th>Người</th><th>💎 ván</th><th>Khiên</th><th>Top gifter</th></tr></thead><tbody></tbody></table>
+  </section>
+</main>
+<script>
+  const v = (id) => document.getElementById(id).value;
+  const msg = (t) => { document.getElementById('msg').textContent = t; };
+  let provinces = {};
+  async function api(path, body) {
+    const r = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body || {}) });
+    const j = await r.json().catch(() => ({}));
+    if (j.message) msg(j.message); else if (j.error) msg('Lỗi: ' + j.error); else msg('OK ' + path);
+    return j;
+  }
+  function ev(e) { return api('/api/sim/event', { userId: v('ev-user'), nickname: v('ev-nick'), ...e }); }
+  function gift(d) { return ev({ type: 'gift', giftId: 'ctl' + d, giftName: 'Quà test', diamonds: d, repeatCount: 1, repeatEnd: true }); }
+  function crowd(enabled) { return api('/api/sim/crowd', { enabled, users: +v('crowd-users'), intensity: +v('crowd-int') }); }
+  function scenario(name) { return api('/api/sim/scenario', { name }); }
+  function settings() {
+    return api('/api/settings', { muted: document.getElementById('muted').checked, volume: +v('volume'), safeZone: document.getElementById('safeZone').checked });
+  }
+  let paused = false;
+  async function togglePause() { paused = !paused; await api('/api/round/pause', { paused }); document.getElementById('btn-pause').textContent = paused ? '▶ Tiếp tục' : '⏸ Tạm dừng'; }
+  async function loadConfig() {
+    const c = await (await fetch('/api/config')).json();
+    for (const p of c.provinces.provinces) provinces[p.id] = p;
+  }
+  async function refresh() {
+    try {
+      const { snapshot: s, status, settings: st } = await (await fetch('/api/state')).json();
+      const left = Math.max(0, Math.ceil((s.phaseEndsAt - s.t) / 1000));
+      document.getElementById('st-phase').textContent = `ván ${s.round} · ${s.phase} · ${left}s${s.paused ? ' · TẠM DỪNG' : ''}`;
+      document.getElementById('st-ws').textContent = `overlay: ${status.clients}`;
+      const tt = status.sources.find((x) => x.name === 'tiktok');
+      const srcEl = document.getElementById('st-src');
+      srcEl.textContent = tt ? `tiktok: ${tt.connected ? 'đã kết nối' : 'đang thử'}` : `nguồn: simulator`;
+      srcEl.className = 'pill' + (tt && !tt.connected ? ' bad' : '');
+      document.getElementById('tt-status').innerHTML = tt ? `<small>${tt.detail}</small>` : `<small>Chưa kết nối. Kênh phải đang LIVE. Cần EULER_API_KEY trong .env để ổn định.</small>`;
+      if (!document.getElementById('tt-user').value && status.tiktokUsername) document.getElementById('tt-user').value = status.tiktokUsername;
+      const tb = document.querySelector('#teams tbody');
+      tb.innerHTML = s.teams.map((t) => {
+        const p = provinces[t.id] || {};
+        return `<tr><td>${t.rank}</td><td><span class="chip" style="background:${p.color || '#fff'}"></span>${p.short || t.id}</td><td>${(t.progress * 100).toFixed(1)}%</td><td>${t.members}</td><td>${t.diamondsRound}</td><td>${t.shields ? '🛡' : ''} ${t.shieldMeter}%</td><td>${t.topGifter ? t.topGifter.nickname + ' ' + t.topGifter.diamonds + '💎' : ''}</td></tr>`;
+      }).join('') || '<tr><td colspan="7"><small>Chưa có đội</small></td></tr>';
+      document.getElementById('crowd-users').placeholder = status.crowd.users;
+    } catch (e) { document.getElementById('st-phase').textContent = 'mất kết nối server'; }
+  }
+  loadConfig().then(refresh);
+  setInterval(refresh, 1000);
+</script>
+</body>
+</html>
